@@ -28,6 +28,12 @@ cd skills/your-new-skill
 # 修改 SKILL.md 中的 name 和 description
 ```
 
+## 开发流程
+
+1. **找方案** - 先看有没有现成的 → `skills/find-skill/`
+2. **学规范** - 阅读开发指南 → `SKILL-DEV-GUIDE.md`
+3. **动手做** - 基于模板开发 → `skills/skill-template/`
+
 ## 📁 项目结构
 
 ```
@@ -39,13 +45,16 @@ skills-starter/
 ├── README.md                     # 本文件
 │
 ├── skills/                      # Skills 目录
-│   └── skill-template/          # Skill 模板
-│       ├── SKILL.md            # Skill 定义
-│       ├── references/         # 参考文档
-│       ├── scripts/            # 自动化脚本
-│       └── assets/             # 静态资源
+│   ├── skill-template/          # Skill 模板
+│   │   ├── SKILL.md            # Skill 定义
+│   │   ├── references/         # 参考文档
+│   │   ├── scripts/            # 自动化脚本
+│   │   └── assets/             # 静态资源
+│   └── find-skill/              # 搜索外部方案工具
+│       └── SKILL.md            # Skill 定义
 │
-└── references/                  # 官方参考资料（可选）
+└── references/                  # 参考资料
+    └── FIND-SKILL-GUIDE.md     # 新手搜索指南
 ```
 
 ## 📚 核心规范
@@ -96,6 +105,7 @@ metadata:
 | `SKILL-DEV-GUIDE.md` | 完整的 Skill 开发指南 |
 | `SKILL-ORCHESTRATION-GUIDE.md` | Skill 编排和组合指南 |
 | `AGENTS.md` | 项目规范和约定 |
+| `references/FIND-SKILL-GUIDE.md` | 新手指南：如何搜索外部现成方案 |
 
 ## 🤝 贡献
 
