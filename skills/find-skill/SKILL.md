@@ -21,7 +21,7 @@ metadata:
 
 在动手开发前，先搜搜有没有现成方案。
 
-> 注意：本目录是**使用引导**，不是外部 `find-skills` 项目的源码仓库。
+> 注意：本仓库采用 `.claude/skills -> ../skills` 的符号链接结构。也就是说，`skills/find-skill/SKILL.md` 既是仓库里的源文件，也是 Claude Code 通过 `.claude/skills/find-skill/` 读取到的 project-local Skill 定义。
 
 ## 什么时候用
 
@@ -173,4 +173,4 @@ npx skills init my-xyz-skill
 
 - [Skills.sh 市场](https://skills.sh/)
 - [Vercel Skills 官方仓库](https://github.com/vercel-labs/skills)
-- [本项目 Skill 开发规范](../../SKILL-DEV-GUIDE.md)
+- [本项目 Skill 开发规范](../../04-创建Skill/SKILL-DEV-GUIDE.md)
