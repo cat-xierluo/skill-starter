@@ -1,137 +1,250 @@
 # SSH 配置
 
-## 什么是 SSH？
+如果你打算长期在自己的电脑上使用 GitHub，通常推荐配 SSH。
 
-SSH（Secure Shell）是一种加密网络协议，用于安全地访问远程服务器和服务。它通过公钥加密技术，在不传输密码的情况下验证身份。
+它解决的是：
 
-## 为什么需要 SSH？
+**你的本地电脑如何安全地和 GitHub 建立可信连接。**
 
-使用 SSH 连接 GitHub 的好处：
-- 🔒 **安全**：不暴露密码
-- 🚀 **便捷**：一次配置，长期使用
-- 📈 **专业**：开发者标准工作方式
+## 什么是 SSH
 
-## 生成 SSH Key（Ed25519 算法）
+SSH 是一种安全连接协议。
 
-Ed25519 是现代、快速、安全的 SSH 密钥算法，推荐使用。
+在 GitHub 场景里，你可以把它简单理解成：
 
-### 步骤
+> 用一对密钥，代替反复输密码或 Token。
 
-1. 打开终端（Terminal / Git Bash）
+## 为什么推荐 SSH
 
-2. 生成密钥
+- 日常 `pull/push` 更顺手
+- 不需要每次输入 Token
+- 长期开发体验更稳定
+
+## 第一步：检查是否已有密钥
+
+```bash
+ls -al ~/.ssh
+```
+
+如果你已经看到类似文件：
+
+- `id_ed25519`
+- `id_ed25519.pub`
+
+说明你可能已经有 SSH key 了。
+
+## 第二步：生成新的 SSH key
+
+推荐使用 `ed25519`。
+
 ```bash
 ssh-keygen -t ed25519 -C "your.email@example.com"
 ```
 
-3. 当提示 "Enter a file in which to save the key" 时：
-```
-> Enter a file in which to save the key (/Users/you/.ssh/id_ed25519):
-```
-直接按 **Enter** 使用默认位置。
+生成过程中会问你几件事：
 
-4. 设置密码（可选，建议设置）：
-```
-> Enter passphrase (empty for no passphrase):
-> Enter same passphrase again:
-```
-输入密码并确认。
+### 保存位置
 
-5. 看到类似输出表示成功：
-```
-Your public key has been saved in /Users/you/.ssh/id_ed25519.pub
-The key fingerprint is:
-SHA256:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx your.email@example.com
+一般直接回车，用默认路径：
+
+```text
+~/.ssh/id_ed25519
 ```
 
-## 添加到 GitHub
+### passphrase
 
-1. **复制公钥内容**
+可以理解成“给私钥再加一层密码”。
+
+建议：
+
+- 自己长期使用的电脑，最好设置
+- 临时环境可按需决定
+
+## 第三步：启动 ssh-agent 并加载密钥
+
 ```bash
-# Mac
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+```
+
+如果你设置了 passphrase，这里会提示输入。
+
+## 第四步：复制公钥
+
+公钥文件通常是：
+
+```text
+~/.ssh/id_ed25519.pub
+```
+
+### macOS
+
+```bash
 pbcopy < ~/.ssh/id_ed25519.pub
+```
 
-# Linux
-cat ~/.ssh/id_ed25519.pub
-# 手动复制输出内容
+### Windows Git Bash
 
-# Windows (Git Bash)
+```bash
 clip < ~/.ssh/id_ed25519.pub
 ```
 
-2. **在 GitHub 添加公钥**
-   - 登录 GitHub，点击右上角头像 → **Settings**
-   - 左侧菜单点击 **SSH and GPG keys**
-   - 点击 **New SSH key**
-   - 填写：
-     - **Title**：给你的密钥起个名字，如 "MacBook Pro"
-     - **Key type**：Authentication Key
-     - **Key**：粘贴刚才复制的公钥内容
-   - 点击 **Add SSH key**
+### Linux
 
-> 📍 **截图位置**：SSH Keys 页面，绿色 "New SSH key" 按钮
+```bash
+cat ~/.ssh/id_ed25519.pub
+```
 
-## 验证连接
+然后手动复制输出内容。
 
-在终端输入：
+## 第五步：把公钥添加到 GitHub
+
+GitHub 页面路径通常是：
+
+1. 右上角头像
+2. `Settings`
+3. `SSH and GPG keys`
+4. `New SSH key`
+
+填写时：
+
+- `Title`：写机器名，例如 `MacBook-Air`
+- `Key type`：认证用途
+- `Key`：粘贴刚才复制的公钥
+
+然后保存。
+
+## 第六步：验证连接
+
 ```bash
 ssh -T git@github.com
 ```
 
-首次连接会看到：
-```
-The authenticity of host 'github.com (xx.xx.xx.xx)' can't be established.
-RSA key fingerprint is SHA256:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.
-Are you sure you want to continue connecting (yes/no)?
+第一次连接时，可能会提示你确认主机：
+
+```text
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
 ```
 
-输入 **yes** 并按 Enter。
+输入：
 
-看到以下消息表示成功：
+```text
+yes
 ```
+
+如果成功，通常会看到类似信息：
+
+```text
 Hi username! You've successfully authenticated, but GitHub does not provide shell access.
 ```
 
-## 配置多个 SSH Key
+这表示认证已经成功。
 
-如果使用多个 GitHub 账号，创建配置文件 `~/.ssh/config`：
+## 第七步：确认仓库 remote 用的是 SSH
+
+查看当前仓库 remote：
 
 ```bash
-# ~/.ssh/config
+git remote -v
+```
 
-# 默认账号
+如果你看到的是：
+
+```text
+https://github.com/用户名/仓库名.git
+```
+
+说明当前还是 HTTPS。
+
+改成 SSH：
+
+```bash
+git remote set-url origin git@github.com:用户名/仓库名.git
+```
+
+## 多账号怎么配
+
+如果你有多个 GitHub 账号，可以在 `~/.ssh/config` 里分开配置。
+
+示例：
+
+```sshconfig
 Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519
 
-# 第二个账号
 Host github-work
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_ed25519_work
 ```
 
-使用非默认账号时，remote URL 需要修改：
-```bash
-# 普通
-git@github.com:username/repo.git
+这样第二个账号的仓库地址可以写成：
 
-# 使用特定密钥
-git@github-work:username/repo.git
+```bash
+git@github-work:用户名/仓库名.git
 ```
 
 ## 常见问题
 
-### Q: 每次重启终端都需要输入密码？
-A: 启动 SSH Agent 并添加密钥：
+### 1. `Permission denied (publickey)`
+
+最常见。
+
+按这个顺序检查：
+
+1. 公钥是否真的添加到 GitHub
+2. 当前 remote 是否是 SSH
+3. `ssh-agent` 是否加载了密钥
+4. 是否推错了 GitHub 账号
+
+### 2. 我明明配了 SSH，为什么还是走 HTTPS
+
+因为仓库 remote URL 还是 HTTPS。
+
+执行：
+
+```bash
+git remote -v
+```
+
+确认后再用 `git remote set-url origin ...` 改掉。
+
+### 3. 每次开新终端都要重新输 passphrase
+
+这通常和本地的 agent 或钥匙串设置有关。
+
+最小处理办法：
+
 ```bash
 eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_ed25519
 ```
 
-### Q: Permission denied (publickey)？
-A: 检查：
-1. 公钥是否正确添加到 GitHub
-2. 密钥文件路径是否正确
-3. SSH Agent 是否加载了密钥
+### 4. `Host key verification failed`
+
+通常是本机记录的 GitHub 主机信息有冲突，或者第一次连接没确认好。
+
+这种情况先不要乱删文件，优先确认：
+
+- 你连接的是不是真的 `github.com`
+- 网络环境是否正常
+
+## 新手推荐实践
+
+1. 一台长期开发机器用一把清晰命名的 SSH key
+2. 不要把私钥发给任何人
+3. 公钥可以上传，私钥绝不能泄露
+4. 配完后先用 `ssh -T git@github.com` 验证
+5. 再去 clone / push
+
+## 官方资料
+
+- GitHub 官方 SSH 文档：[Adding a new SSH key to your GitHub account](https://docs.github.com/authentication/connecting-to-github-with-ssh)
+
+## 一句话总结
+
+SSH 配置的目标不是“生成一个神秘文件”，而是：
+
+**让你的电脑成为 GitHub 认可的可信设备。**
