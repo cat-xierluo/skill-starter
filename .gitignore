@@ -28,6 +28,10 @@ ENV/
 # IDE
 .idea/
 .vscode/
+.claude/.git/
+.claude/.DS_Store
+.claude/settings.local.json
+.claude/*.local.*
 *.swp
 *.swo
 
@@ -47,3 +51,7 @@ Thumbs.db
 # Generated output
 output/
 **/output/
+
+# Project collaboration docs (AI context, not for tracking)
+docs/
+status/
