@@ -9,16 +9,21 @@
 ```text
 skill-name/
 ├── SKILL.md          # 必需 (官方规范)
+├── CHANGELOG.md      # 推荐: 对外可见变更
+├── ROADMAP.md        # 推荐: 阶段目标和里程碑
+├── TASKS.md          # 推荐: 当前任务状态
+├── DECISIONS.md      # 推荐: 决策与工作日志
+├── .env.example      # 推荐: 环境变量模板
 ├── LICENSE.txt       # 可选 (官方规范)
 ├── references/       # 可选:参考文档,按需加载 (官方规范)
 ├── scripts/          # 可选:可执行代码 (扩展)
-└── assets/           # 可选:输出资源文件,不加载到上下文 (扩展)
+└── assets/           # 可选:结构化配置模板、静态资源 (扩展)
 ```
 
 **说明**:
 
 - **官方规范**: `SKILL.md`、`LICENSE.txt`、`references/` 是 Claude Code 官方定义的标准目录
-- **扩展内容**: `scripts/`、`assets/` 是本项目的扩展约定,用于更好地组织代码和资源
+- **扩展内容**: `scripts/`、`assets/` 以及根目录协作文档，是本项目的扩展约定,用于更好地组织代码、配置和协作上下文
 
 **目录层级规则**:
 
@@ -26,7 +31,7 @@ skill-name/
 - ❌ `references/docs/api/guide.md` (层级过深)
 - ✅ `references/api-guide.md` (扁平结构)
 
-**注意**: `test/` 目录中的 `DECISIONS.md`、`TASKS.md`、`CHANGELOG.md` 是**开发协作文件**,不属于最终 skill 产品。
+**注意**: 对于需要长期维护的 Skill，建议把 `CHANGELOG.md`、`ROADMAP.md`、`TASKS.md`、`DECISIONS.md` 一起纳入仓库，而不是把上下文只留在对话里。
 
 ## 2. 模块化设计原则
 
@@ -74,13 +79,13 @@ SKILL.md 必须以 YAML frontmatter 开头:
 ---
 name: skill-name
 description: 功能描述。This skill should be used when...
-license: Complete terms in LICENSE.txt
 ---
 ```
 
 **字段说明**:
 
-- ✅ 有 `license` 字段
+- ✅ `name` 和 `description` 是必需字段
+- ✅ `license`、`metadata` 等字段按需添加
 - ❌ 无 `version` 字段(版本信息在 `CHANGELOG.md` 中管理)
 
 ## 4. description 写作规范
@@ -220,17 +225,18 @@ Skills 使用渐进式加载系统管理上下文:
 
 ### (1) 文件命名规则
 
-| 类型     | 格式            | 是否提交 | 说明                                     |
+| 类型 | 格式 | 是否提交 | 说明 |
 | -------- | --------------- | -------- | ---------------------------------------- |
-| 模板文件 | `*.example.*` | ✅ 提交  | 包含示例值的模板，可直接复制使用         |
-| 配置文件 | `*`           | ❌ 忽略  | 实际使用的配置文件，应被 .gitignore 忽略 |
+| 环境变量模板 | `.env.example` | ✅ 提交 | 环境变量模板，通常放在 Skill 根目录 |
+| 配置模板 | `*.example.*` | ✅ 提交 | 结构化配置模板，通常放在 `assets/` |
+| 实际配置 | `.env` / `config.yaml` | ❌ 忽略 | 实际使用的配置文件，应被 `.gitignore` 忽略 |
 
 **示例**:
 
 ```text
-.env.example            → 提交（模板）
+.env.example            → 提交（环境变量模板）
 .env                    → 忽略（实际配置）
-config.yaml.example     → 提交（模板）
+assets/config.yaml.example → 提交（结构化配置模板）
 config.yaml             → 忽略（实际配置）
 ```
 
@@ -238,9 +244,9 @@ config.yaml             → 忽略（实际配置）
 
 每个 skill 是**自包含项目**，所有配置在项目目录内管理：
 
-- ✅ 模板文件放在 `assets/` 目录
-- ✅ 配置文件与模板文件在同一目录
-- ✅ 用户复制 `.env.example` 为 `.env`（同目录）
+- ✅ `.env.example` 放在 Skill 根目录，便于直接复制为 `.env`
+- ✅ 结构化配置模板放在 `assets/` 目录
+- ✅ 配置文件与对应模板文件在同一逻辑位置
 - ✅ 代码从项目目录读取配置文件
 - ❌ 不要要求用户复制到外部目录（如 `~/.xxx/`）
 
@@ -293,7 +299,31 @@ output_dir: ""  # 为空时默认保存到 skill 内部的 output/ 目录
 
 **注意**: `.gitignore` 在项目根目录配置，涵盖所有需要忽略的文件。
 
-## 9. 技能间协作规范
+## 9. 协作文档规范
+
+对于复杂 Skill、团队协作 Skill 或需要长期维护的 Skill，建议默认包含以下文件：
+
+```text
+skill-name/
+├── CHANGELOG.md
+├── ROADMAP.md
+├── TASKS.md
+└── DECISIONS.md
+```
+
+**职责建议**：
+
+- `CHANGELOG.md`：记录对外可见的变更
+- `ROADMAP.md`：记录阶段目标、里程碑和进展
+- `TASKS.md`：记录当前任务状态
+- `DECISIONS.md`：记录关键决策和工作日志
+
+**补充说明**：
+
+- starter 仓库这类“项目级模板仓库”可以继续使用 `docs/` 与 `status/` 分类
+- 单个 Skill 内部更推荐采用 `legal-skills` 那种根目录扁平文档组织
+
+## 10. 技能间协作规范
 
 ### (1) 核心原则
 
@@ -327,7 +357,7 @@ python ../../skills/funasr-transcribe/scripts/transcribe.py
 
 对于定时任务、条件分支、串行/并行执行等复杂编排，请参考 **[SKILL-ORCHESTRATION-GUIDE.md](SKILL-ORCHESTRATION-GUIDE.md)**。
 
-## 10. 安全审计
+## 11. 安全审计
 
 ### (1) 基本原则
 
@@ -363,11 +393,11 @@ find ./output -mindepth 1 -delete
 - [ ] **无 `rm -rf ~`、`rm -rf /` 等危险命令**
 - [ ] **Makefile/shell 脚本中的删除命令经过审查**
 
-## 11. 开发流程
+## 12. 开发流程
 
 ### (1) 创建新 Skill
 
-在 `skills/` 目录下创建 `scripts/` 和 `assets/` 子目录，创建 SKILL.md。如需配置文件则在 `assets/` 下创建 `config.yaml.example`。
+在 `skills/` 目录下创建 `scripts/`、`assets/` 子目录，并在根目录创建 `SKILL.md`、`CHANGELOG.md`、`ROADMAP.md`、`TASKS.md`、`DECISIONS.md` 和 `.env.example`。如需结构化配置文件，则在 `assets/` 下创建 `config.yaml.example`。
 
 ### (2) 开发时优先事项
 
@@ -385,7 +415,7 @@ find ./output -mindepth 1 -delete
    - 提供 --max-items 等测试参数
    - 支持小范围数据验证
 
-## 12. 技能验证规范
+## 13. 技能验证规范
 
 完成技能开发后，应进行以下验证测试：
 
@@ -413,7 +443,7 @@ find ./output -mindepth 1 -delete
 - SKILL.md 行数在 500 行以内
 - references/ 目录层级扁平
 
-## 13. SKILL-DEV-GUIDE.md 更新规范
+## 14. SKILL-DEV-GUIDE.md 更新规范
 
 **重要**: 本指南文件(SKILL-DEV-GUIDE.md)的每次修改都必须同步更新底部的"变更历史"章节。
 
@@ -447,6 +477,7 @@ AI 代理在修改 SKILL-GUIDE.md 时,必须:
 
 | 版本   | 日期       | 更新内容                                                                                                                                                    |
 | ------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| v2.4.0 | 2026-03-30 | 增加协作文档规范；统一 `.env.example` 与 `assets/` 的职责；调整目录结构示例与开发流程说明                                                                    |
 | v2.3.0 | 2026-03-01 | 整合 mgechev/skills-best-practices：§1 目录层级规则、§4 负向触发条件、§6 行数限制(<500行)、新增 §12 技能验证规范、原 §12 顺延为 §13                        |
 | v2.2.0 | 2026-02-28 | 精简冗余示例（§4/§8/§10/§11）                                                                                   |
 | v2.1.0 | 2026-02-28 | 精简 §9 协作规范；删除 TDD 章节；调整编号                                                                                                                   |
