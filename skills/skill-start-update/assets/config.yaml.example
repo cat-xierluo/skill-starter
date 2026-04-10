@@ -1,0 +1,2 @@
+# skill-starter-update - 高级配置
+check_interval_hours: 48  # 检测间隔，默认 48 小时

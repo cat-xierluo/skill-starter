@@ -1,0 +1,2 @@
+# Python 依赖（按需添加）
+# pip install -r assets/requirements.txt
