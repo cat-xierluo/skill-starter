@@ -7,7 +7,7 @@ Skill 开发启动模板仓库，面向 OpenClaw、Claude Code 和 Skills CLI �
 - 解释 Skill 的核心概念和基础工具链
 - 作为一个需求分流入口，先判断是否已有现成 Skill 可复用
 - 提供一个可直接复制的 `skill-template`
-- 提供一个带 `CHANGELOG.md`、`ROADMAP.md`、`TASKS.md`、`DECISIONS.md` 的完整示例 Skill
+- `skills/` 下提供多个真实在用的 Skill 可直接参考（`skill-template`、`skill-creator`、`git-batch-commit`、`skill-manager`）
 - 整理 Claude 官方 Skills / context / best practices / PDF 资料
 - 为本仓库自身提供可持续迭代的协作文档体系
 
@@ -20,7 +20,6 @@ Skill 开发启动模板仓库，面向 OpenClaw、Claude Code 和 Skills CLI �
 ## 你会得到什么
 
 - 一份可复用的 Skill 模板
-- 一份完整示例 `skills/weekly-weather-briefing/`
 - 一套协作文档骨架：`CHANGELOG.md`、`docs/`
 - 一组从概念到实操的中文文档
 - 一份 Claude 官方 Skills / context / best practices 资料导航
@@ -38,7 +37,7 @@ Skill 开发启动模板仓库，面向 OpenClaw、Claude Code 和 Skills CLI �
 这个仓库不是只教你“怎么从零写 Skill”，而是先帮你判断要不要自己写。
 
 1. 先用自然语言说清楚你的需求、目标和约束。
-2. 先用项目内置 `find-skill` 或 Skills CLI 搜现成方案。
+2. 先用项目内置 `find-skills` 或 Skills CLI 搜现成方案。
 3. 如果已有 Skill 基本可用，优先直接使用，或在现有方案上做定向调整。
 4. 只有在找不到合适方案，或者你明确需要自定义实现时，再进入 `04-创建Skill/` 和 `skills/skill-template/` 的创建流程。
 
@@ -50,7 +49,7 @@ Skill 开发启动模板仓库，面向 OpenClaw、Claude Code 和 Skills CLI �
 
 ```text
 .claude/skills -> ../skills
-.claude/skills/find-skill/
+.claude/skills/find-skills/
 ```
 
 也可以直接用 Skills CLI 自带搜索：
@@ -106,11 +105,9 @@ cd ../my-awesome-skill
 python3 scripts/main.py --task "describe what this skill should do"
 ```
 
-### 第五步：看完整示例
+### 第五步：参考真实 Skill
 
-如果你想直接参考一个带协作文档体系的实际样例，优先看：
-
-- `skills/weekly-weather-briefing/`
+`skills/` 下已有多个真实在用的 Skill 可直接参考，例如 `skill-template/`（骨架模板）、`skill-creator/`（Skill 创建工作流）、`git-batch-commit/`（批量提交）。
 
 ## 项目结构
 
@@ -144,6 +141,7 @@ skill-starter/
 │   ├── 03-基于模板创建.md
 │   └── 04-调试与发布.md
 ├── 05-参考资料/
+├── scripts/                # 仓库自检脚本（断链 + skill 完整性）
 └── skills/
     ├── skill-template/        # starter 原创：Skill 仓库骨架模板
     ├── find-skills/           # starter 原创：仓库内 Skill 检索
@@ -160,6 +158,7 @@ skill-starter/
 | 理解许可证和开源授权 | `01-概念入门/02-什么是-许可证.md` |
 | 补 Git 和 GitHub 基础 | `02-工具指南/` |
 | 学提交规范与推送流程 | `02-工具指南/04-提交到-GitHub-与-Commit-规范.md` |
+| 学 PR 与 Code Review | `02-工具指南/05-GitHub-PR-与-Code-Review.md` |
 | 理解 AGENTS.md / CLAUDE.md | `03-AI协作与上下文/02-什么是-AGENTS和-CLAUDE.md` |
 | 学 Vibe Coding / 上下文工程 / Rules | `03-AI协作与上下文/` |
 | 从零创建一个 Skill | `04-创建Skill/03-基于模板创建.md` |
@@ -170,9 +169,8 @@ skill-starter/
 | 看 Claude 官方最佳实践清单 | `05-参考资料/10-Claude-Skill-最佳实践清单.md` |
 | 看 Claude Code 的上下文 / memory / settings | `05-参考资料/09-Claude-Code-上下文与记忆.md` |
 | 看许可证官方参考 | `05-参考资料/12-许可证与开源授权参考.md` |
-| 直接用项目内置 find-skill | `.claude/skills/find-skill/`（源文件在 `skills/find-skill/`） |
+| 直接用项目内置 find-skills | `.claude/skills/find-skills/`（源文件在 `skills/find-skills/`） |
 | 复制模板 | `skills/skill-template/` |
-| 参考完整示例 | `skills/weekly-weather-briefing/` |
 | 查看项目路线图 | `docs/ROADMAP.md` |
 
 ## 推荐外部资源
@@ -190,6 +188,7 @@ skill-starter/
 - 中长期规划写入 `docs/ROADMAP.md`
 - 当前任务写入 `docs/TASKS.md`
 - 决策和工作日志写入 `docs/DECISIONS.md`
+- 提交前跑 `bash scripts/check.sh` 做断链与 skill 完整性自检
 
 单个 Skill 内部则参考 `legal-skills` 的扁平做法：
 

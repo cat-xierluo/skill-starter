@@ -157,12 +157,6 @@ max_items: 5
 - [ ] `CHANGELOG.md`、`ROADMAP.md`、`TASKS.md`、`DECISIONS.md` 已初始化
 - [ ] `scripts/main.py` 可以直接跑通
 
-## 参考示例
-
-需要一个完整参考时，优先看：
-
-- [weekly-weather-briefing](../weekly-weather-briefing/SKILL.md)
-
 ## 相关链接
 
 - [Skill 开发总指南](../../04-创建Skill/SKILL-DEV-GUIDE.md)

@@ -47,7 +47,7 @@ AI 代理应把它当作“先判断是否已有现成方案，再决定复用�
    - `从零创建 Skill`
    - `补概念、工具或上下文知识`
 2. **先搜索现成方案**
-   - 优先使用项目内置 `.claude/skills/find-skill/`
+   - 优先使用项目内置 `.claude/skills/find-skills/`
    - 本仓库采用 `.claude/skills -> ../skills` 的符号链接结构，根目录 `skills/` 是单一来源
    - 仍不够时，再使用 Skills CLI，例如 `npx skills find <keyword>`
 3. **能复用就不要新建**
@@ -68,7 +68,7 @@ AI 代理应把它当作“先判断是否已有现成方案，再决定复用�
 | 目录 | 适用问题 |
 | :--- | :--- |
 | `01-概念入门/` | Skill 是什么、术语是什么、基础心智模型是什么 |
-| `02-工具指南/` | Git、GitHub、SSH、commit 规范、推送流程 |
+| `02-工具指南/` | Git、GitHub、SSH、commit 规范、推送流程、PR / Code Review |
 | `03-AI协作与上下文/` | Vibe Coding、`AGENTS.md`、`CLAUDE.md`、Rules、上下文工程 |
 | `04-创建Skill/` | 需求分析、搜索现成方案、复制模板、调试发布 |
 | `05-参考资料/` | Claude 官方文档、博客、PDF、最佳实践、深度资料 |
@@ -229,6 +229,15 @@ docs: 更新 xxx 文档
 1. 创建 PR
 2. 常规功能：创建后自动合并
 3. 重大变更：人工 review 后合并
+
+### 提交前自检
+
+提交或发起 PR 前运行 `bash scripts/check.sh`，确认：
+
+- Markdown 相对链接无断链（抓幽灵引用、目录命名漂移）
+- `skills/` 下每个 skill 有 `SKILL.md` 且 frontmatter 含 `name` / `description`
+
+存在失败项时先修复再提交。脚本细节见 `scripts/check_links.py`、`scripts/check_skills.py`。
 
 ---
 

@@ -26,4 +26,3 @@
 ## 仓库内参考
 
 - [Skill 开发总指南](../../../04-创建Skill/SKILL-DEV-GUIDE.md)
-- [完整示例 Skill](../../weekly-weather-briefing/SKILL.md)

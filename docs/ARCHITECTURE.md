@@ -29,8 +29,7 @@
 
 - `.claude/skills -> ../skills`：Claude Code 实际读取的 project-local Skill 入口
 - `skills/skill-template/`：标准起点模板
-- `skills/weekly-weather-briefing/`：完整示例 Skill
-- `skills/find-skill/`：搜索外部 Skill 的引导文档
+- `skills/find-skills/`：搜索外部 Skill 的引导文档
 
 ### 3. 仓库治理层
 
