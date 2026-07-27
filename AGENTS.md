@@ -96,7 +96,6 @@ AI 代理应把它当作“先判断是否已有现成方案，再决定复用�
   - `.codex/skills -> ../.claude/skills`
   - `.openclaw/skills -> ../.claude/skills`
   - `.workbuddy/skills -> ../.claude/skills`
-  - `.qoderworkcn/skills -> ../.claude/skills`
 - `.claude/skills` 仍是唯一的技能来源;其他 Agent 通过两层相对符号链接发现同一套 Skill,**不复制、不双写**。
 - `skills/` 下既可以放可直接调用的 Skill，也可以放模板和示例；是否调用，取决于 `SKILL.md` 的描述与当前任务匹配程度。
 - `.claude/settings.local.json`、`.claude/*.local.*`、`.claude/.git/` 等本地配置和元数据继续保持忽略;同样地,各 Agent 目录下的 `settings.local.json` / `*.local.*` / `.DS_Store` 也按 `.gitignore` 忽略。

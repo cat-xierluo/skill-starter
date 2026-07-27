@@ -69,7 +69,6 @@ npx skills find react performance
 .codex/skills       -> ../.claude/skills
 .openclaw/skills    -> ../.claude/skills
 .workbuddy/skills   -> ../.claude/skills
-.qoderworkcn/skills -> ../.claude/skills
 ```
 
 `.claude/skills` 仍是唯一的技能来源；其他 Agent 通过两层符号链接共享同一套 Skill，**不复制、不双写**。本地配置（如 `.codex/settings.local.json`）继续按 `.gitignore` 约定被忽略。
@@ -128,8 +127,6 @@ skill-starter/
 ├── .openclaw/
 │   └── skills -> ../.claude/skills
 ├── .workbuddy/
-│   └── skills -> ../.claude/skills
-├── .qoderworkcn/
 │   └── skills -> ../.claude/skills
 ├── docs/
 │   ├── ARCHITECTURE.md

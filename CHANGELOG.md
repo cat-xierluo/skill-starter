@@ -3,6 +3,23 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.11.0 - 2026-07-27
+
+### Removed
+
+- 删除 `.qoderworkcn/skills` 符号链接及 `.qoderworkcn/` 目录。starter 仓库不再内置 QoderWork 的多 Agent 符号链接；如需 QoderWork 支持，可由 `skills/skill-manager` 的 `init.sh --qoderwork` 按需生成。
+
+### Changed
+
+- 默认分支从 `master` 重命名为 `main`（GitHub 默认分支、本地分支、upstream 跟踪均已同步）。
+- `README.md` 项目结构和多 Agent 共享说明移除 `.qoderworkcn`，保留 `.codex` / `.openclaw` / `.workbuddy` 三个。
+- `AGENTS.md` "Project-local Skills 约定"中的相对符号链接列表移除 `.qoderworkcn`。
+- `.gitignore` 移除 `.qoderworkcn/.DS_Store`、`.qoderworkcn/settings.local.json`、`.qoderworkcn/*.local.*` 三条忽略规则。
+
+### Notes
+
+- `skills/skill-manager/` 是从 legal-skills 同步的上游 skill，其内部仍完整支持 `.qoderworkcn` 目录（`init.sh` / `target.sh` / `install.sh` 等），这是 skill-manager 的功能定义，不受 starter 仓库自身移除 `.qoderworkcn` 影响。
+
 ## 0.10.0 - 2026-07-27
 
 ### Removed

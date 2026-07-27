@@ -41,9 +41,6 @@ ENV/
 .workbuddy/.DS_Store
 .workbuddy/settings.local.json
 .workbuddy/*.local.*
-.qoderworkcn/.DS_Store
-.qoderworkcn/settings.local.json
-.qoderworkcn/*.local.*
 *.swp
 *.swo
 
