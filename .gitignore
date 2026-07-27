@@ -32,6 +32,18 @@ ENV/
 .claude/.DS_Store
 .claude/settings.local.json
 .claude/*.local.*
+.codex/.DS_Store
+.codex/settings.local.json
+.codex/*.local.*
+.openclaw/.DS_Store
+.openclaw/settings.local.json
+.openclaw/*.local.*
+.workbuddy/.DS_Store
+.workbuddy/settings.local.json
+.workbuddy/*.local.*
+.qoderworkcn/.DS_Store
+.qoderworkcn/settings.local.json
+.qoderworkcn/*.local.*
 *.swp
 *.swo
 
@@ -52,10 +64,9 @@ Thumbs.db
 output/
 **/output/
 
-# Project collaboration docs (AI context, not for tracking)
-docs/
-status/
-
 # CLAUDE.md — only root-level is tracked; ignore all others
 **/CLAUDE.md
 !CLAUDE.md
+
+# Starter backups — defensive copies of pre-cherry-pick skill contents
+.starter-backups/
