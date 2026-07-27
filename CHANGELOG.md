@@ -3,6 +3,51 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.10.0 - 2026-07-27
+
+### Removed
+
+- 删除 `skills/skill-start-update/` 整个目录（原 starter 原创 skill，用于检查远程更新）。`AGENTS.md` 中的"按需检查更新"原则改为直接通过 `git fetch origin && git status` 自行确认。
+- 清理项目内 30 处冗余的嵌套 `CLAUDE.md` 文件（均为 claude-mem 自动生成的空模板，root `CLAUDE.md` 之外的副本）。`.gitignore` 已有 `**/CLAUDE.md` + `!CLAUDE.md` 规则抑制继续生成。
+
+### Changed
+
+- 协作文档路径对齐：把 `status/TASKS.md` 迁移到 `docs/TASKS.md`，`status/DECISIONS.md` 迁移到 `docs/DECISIONS.md`，删除空的 `status/` 目录。
+- `.gitignore` 移除对 `docs/` 和 `status/` 的整体排除，新迁移的协作文档纳入版本管理。
+- `AGENTS.md` 中更新协作文档约定与项目结构相关的路径引用。
+- `README.md` 项目结构小节移除 `skill-start-update/`，更新 `docs/` 子目录与原创 skills 列表。
+- `docs/ARCHITECTURE.md` "仓库治理层"与"协作文档默认存在"两节更新路径引用。
+
+## 0.9.0 - 2026-07-27
+
+### Added
+
+- 新增 `skills/skill-manager/`,从 [legal-skills](https://github.com/cat-xierluo/legal-skills) `main` 分支通过 `git checkout legal-skills/main -- skills/skill-manager` 同步,版本 `1.7.0`,覆盖 `scripts/{install,list,remove,update,check,init,target,security,record,auto-check}.sh` / `*.py` 及 `assets/skill-registry.example.json`。
+
+### Changed
+
+- `skills/git-batch-commit/` 同步自 legal-skills `main`,版本由 starter 自有版本升至 `1.4.1`。本次拉取更新了 `SKILL.md`、`CHANGELOG.md`、`scripts/generate_commit_message.py`、`scripts/interactive_commit.py`,并新增 3 个 references(`clawhub-sync-check.md`、`message-data.yaml`、`subtree-push-check.md`)和更新 `references/conventional-commits.md`。
+- 新增只读 remote `legal-skills`,仅用于拉取上游 Skill,从不向其推送。
+- `README.md` 项目结构小节标注每个 skill 的来源(同步自 legal-skills 或 starter 原创),并新增"与 legal-skills 的同步关系"小节记录同步命令与约定。
+- `AGENTS.md` 中"上游同步文件"约定扩展到 `skills/`,明确 `git-batch-commit` 和 `skill-manager` 走 upstream,其他 4 个 skill 不从 upstream 同步。
+
+### Notes
+
+- 同步前对 starter 本地 5 个同名 skill(`find-skills`、`git-batch-commit`、`skill-creator`、`skill-start-update`、`skill-template`)做了完整备份到 `.starter-backups/<name>/`。该目录被 `.gitignore` 排除,不纳入版本管理,需要时可手动 `mv` 回 `skills/` 即恢复。
+- legal-skills upstream 不含 `find-skills`、`skill-creator`、`skill-start-update`、`skill-template`,这 4 个 skill 为 starter 仓库原创。
+
+## 0.8.0 - 2026-07-27
+
+### Added
+
+- 在项目根目录新增 `.codex/`、`.openclaw/`、`.workbuddy/`、`.qoderworkcn/` 四个目录,各自携带相对符号链接 `skills -> ../.claude/skills`,让 Codex / OpenClaw / WorkBuddy / QoderWork 在本仓库内都能发现同一套 Skill。`.claude/skills` 仍是唯一来源,不复制、不双写。
+
+### Changed
+
+- `.gitignore` 在现有 `.claude/*` 本地配置忽略模式上,按相同规则为每个新 Agent 目录追加 `settings.local.json` / `*.local.*` / `.DS_Store` 的忽略项;Agent 目录本身和其中的 skills 符号链接仍纳入版本管理。
+- `README.md` 项目结构小节补充四个 Agent 目录及相对链接说明,并新增"多 Agent 共享"小节解释两层符号链接的工作方式。
+- `AGENTS.md` 中"Project-local Skills 约定"小节补充四个 Agent 的相对符号链接约定及 `.gitignore` 处理说明。
+
 ## 0.7.0 - 2026-03-31
 
 ### Changed
