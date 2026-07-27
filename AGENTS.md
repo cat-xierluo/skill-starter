@@ -11,7 +11,7 @@ AI 代理应把它当作“先判断是否已有现成方案，再决定复用�
 - **文档即上下文**：关键信息写在文件里，不靠记忆。
 - **先搜索，后创造**：遇到问题先查现有文档，再创新方案。
 - **先复用，后定制**：能直接使用现成 Skill，就不要重复造轮子；只有在现有方案不匹配时才创建新 Skill。
-- **按需检查更新**：如果遇到问题、功能迭代缓慢、或克隆后长时间未更新，可以运行 `Skill(skill-start-update)` 检查本项目是否有远程更新。
+- **按需检查更新**：遇到问题、功能迭代缓慢、或克隆后长时间未更新时，主动执行 `git fetch origin && git status` 或 `git log origin/main..HEAD` 查看是否落后于远程 main，再决定是否同步。
 
 ---
 
@@ -26,8 +26,14 @@ AI 代理应把它当作“先判断是否已有现成方案，再决定复用�
 ## 上游同步文件
 
 - `04-创建Skill/SKILL-*-GUIDE.md` 视为从 `legal-skills` 同步的上游指南文件。
-- 除非用户明确要求“同步上游内容”或“直接改这些 guide 文件”，否则不要手动修改这些文件。
+- 除非用户明确要求”同步上游内容”或”直接改这些 guide 文件”，否则不要手动修改这些文件。
 - 如果当前任务只是补充解释、导航或示例，优先更新 `README.md`、`AGENTS.md`、概念文档、工具文档或参考资料，不要改上游同步文件。
+- `skills/git-batch-commit/` 和 `skills/skill-manager/` 视为从 `legal-skills` 同步的上游 Skill。
+  - 同步来源 remote:`legal-skills`(只读,从不推送),URL `https://github.com/cat-xierluo/legal-skills.git`。
+  - 同步方式:`git fetch legal-skills main && git checkout legal-skills/main -- skills/git-batch-commit skills/skill-manager`。
+  - 同步前建议对比:`git diff legal-skills/main -- skills/<name>`,确认无冲突再覆盖。
+  - 同步前自动备份到 `.starter-backups/<name>/`(该目录被 `.gitignore` 排除,不纳入版本管理)。
+- `skills/find-skills/`、`skills/skill-creator/`、`skills/skill-template/` 为 starter 仓库原创,**不从 upstream 同步**,可自由修改。
 
 ---
 
@@ -86,8 +92,22 @@ AI 代理应把它当作“先判断是否已有现成方案，再决定复用�
 
 - 本仓库采用 `legal-skills` 同款结构：`.claude/skills` 是指向 `../skills` 的符号链接。
 - 根目录 `skills/` 是 Skill 源文件的单一来源，Claude Code 通过 `.claude/skills/` 读取这些 Skill。
+- 同时为多 Agent 共享同一来源,在项目根目录提供以下相对符号链接:
+  - `.codex/skills -> ../.claude/skills`
+  - `.openclaw/skills -> ../.claude/skills`
+  - `.workbuddy/skills -> ../.claude/skills`
+  - `.qoderworkcn/skills -> ../.claude/skills`
+- `.claude/skills` 仍是唯一的技能来源;其他 Agent 通过两层相对符号链接发现同一套 Skill,**不复制、不双写**。
 - `skills/` 下既可以放可直接调用的 Skill，也可以放模板和示例；是否调用，取决于 `SKILL.md` 的描述与当前任务匹配程度。
-- `.claude/settings.local.json`、`.claude/*.local.*`、`.claude/.git/` 等本地配置和元数据继续保持忽略。
+- `.claude/settings.local.json`、`.claude/*.local.*`、`.claude/.git/` 等本地配置和元数据继续保持忽略;同样地,各 Agent 目录下的 `settings.local.json` / `*.local.*` / `.DS_Store` 也按 `.gitignore` 忽略。
+
+## Project-local Commands
+
+- `.claude/commands/` 存放项目级 Claude Code command(用户主动输入 `/<name>` 触发)。
+- 与 `skills/` 不同,commands 是**项目级 prompt**,不是被 AI 主动调用的能力。
+- 当前已沉淀的命令:
+  - `/sync-upstream`:从 upstream 只读 remote 同步或新增 `skills/` 下的 skill,封装了 `git remote add` → `fetch` → `ls-tree` 核实 → `cp` 备份 → `checkout` 拉子树 → 处理意外副作用的完整流程。支持两种模式:**已有 skill 同步**(覆盖式)+ **新 skill 拉取**(新增式)。
+- 新增 command 时,frontmatter 不强制要求,但建议第一行写一句命令做什么的概述,方便在命令面板预览。
 
 ---
 
@@ -176,8 +196,8 @@ description: 英文描述   # 英文，说明用途
 - `CHANGELOG.md`：记录对外可见的变更，并按 `0.1.0`、`0.2.0` 这类内部迭代版本持续维护，即使尚未正式发布
 - `docs/ROADMAP.md`：记录阶段目标和里程碑
 - `docs/ARCHITECTURE.md`：记录结构、职责和边界
-- `status/TASKS.md`：记录当前待办和完成状态
-- `status/DECISIONS.md`：记录决策与工作日志
+- `docs/TASKS.md`：记录当前待办和完成状态
+- `docs/DECISIONS.md`：记录决策与工作日志
 
 工作涉及结构性调整、模板更新、默认工作流变化或可见行为变化时，应同步更新相关文档。
 

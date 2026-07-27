@@ -21,9 +21,17 @@ Skill 开发启动模板仓库，面向 OpenClaw、Claude Code 和 Skills CLI �
 
 - 一份可复用的 Skill 模板
 - 一份完整示例 `skills/weekly-weather-briefing/`
-- 一套协作文档骨架：`CHANGELOG.md`、`docs/`、`status/`
+- 一套协作文档骨架：`CHANGELOG.md`、`docs/`
 - 一组从概念到实操的中文文档
 - 一份 Claude 官方 Skills / context / best practices 资料导航
+
+## 与 legal-skills 的同步关系
+
+`skills/git-batch-commit/` 和 `skills/skill-manager/` 通过 `git fetch legal-skills main` + `git checkout legal-skills/main -- skills/<name>` 从 [legal-skills](https://github.com/cat-xierluo/legal-skills) 同步最新内容;另外 3 个(`skill-template` / `find-skills` / `skill-creator`)是 starter 仓库原创,不从 upstream 同步。
+
+- legal-skills 作为只读 remote:`git remote add legal-skills https://github.com/cat-xierluo/legal-skills.git`
+- 同步命令:`git fetch legal-skills main && git checkout legal-skills/main -- skills/git-batch-commit skills/skill-manager`
+- 同步前可对比:`git diff skill-starter/main legal-skills/main -- skills/<name>`
 
 ## 默认使用路径
 
@@ -52,6 +60,19 @@ npx skills find react performance
 ```
 
 也就是说，Claude Code 实际从 `.claude/skills/` 读取项目内 Skill，而仓库里真正维护的源文件在根目录 `skills/` 中。
+
+### 多 Agent 共享
+
+为了支持多个 Agent 在同一个项目里协作，本仓库还为以下 Agent 创建了相对符号链接：
+
+```text
+.codex/skills       -> ../.claude/skills
+.openclaw/skills    -> ../.claude/skills
+.workbuddy/skills   -> ../.claude/skills
+.qoderworkcn/skills -> ../.claude/skills
+```
+
+`.claude/skills` 仍是唯一的技能来源；其他 Agent 通过两层符号链接共享同一套 Skill，**不复制、不双写**。本地配置（如 `.codex/settings.local.json`）继续按 `.gitignore` 约定被忽略。
 
 ### 第二步：复制模板
 
@@ -102,12 +123,19 @@ skill-starter/
 ├── CLAUDE.md
 ├── .claude/
 │   └── skills -> ../skills
+├── .codex/
+│   └── skills -> ../.claude/skills
+├── .openclaw/
+│   └── skills -> ../.claude/skills
+├── .workbuddy/
+│   └── skills -> ../.claude/skills
+├── .qoderworkcn/
+│   └── skills -> ../.claude/skills
 ├── docs/
 │   ├── ARCHITECTURE.md
-│   └── ROADMAP.md
-├── status/
-│   ├── TASKS.md
-│   └── DECISIONS.md
+│   ├── DECISIONS.md
+│   ├── ROADMAP.md
+│   └── TASKS.md
 ├── 01-概念入门/
 ├── 02-工具指南/
 ├── 03-AI协作与上下文/
@@ -120,9 +148,11 @@ skill-starter/
 │   └── 04-调试与发布.md
 ├── 05-参考资料/
 └── skills/
-    ├── skill-template/
-    ├── find-skill/
-    └── weekly-weather-briefing/
+    ├── skill-template/        # starter 原创：Skill 仓库骨架模板
+    ├── find-skills/           # starter 原创：仓库内 Skill 检索
+    ├── git-batch-commit/      # 同步自 legal-skills：批量提交拆分
+    ├── skill-creator/         # starter 原创：Skill 创建工作流
+    └── skill-manager/         # 同步自 legal-skills：多 Agent 安装管理
 ```
 
 ## 资源导航
@@ -161,8 +191,8 @@ skill-starter/
 
 - 对外可见的变更写入 `CHANGELOG.md`
 - 中长期规划写入 `docs/ROADMAP.md`
-- 当前任务写入 `status/TASKS.md`
-- 决策和工作日志写入 `status/DECISIONS.md`
+- 当前任务写入 `docs/TASKS.md`
+- 决策和工作日志写入 `docs/DECISIONS.md`
 
 单个 Skill 内部则参考 `legal-skills` 的扁平做法：
 
