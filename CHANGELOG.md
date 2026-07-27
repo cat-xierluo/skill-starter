@@ -3,6 +3,32 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.12.0 - 2026-07-27
+
+### Added
+
+- 新增 `scripts/check_links.py`：扫描所有 Markdown 相对链接，抓幽灵引用与目录命名漂移。
+- 新增 `scripts/check_skills.py`：校验 `skills/` 下每个 skill 的 `SKILL.md` 与 frontmatter 必需字段，推荐文件缺失告警。
+- 新增 `scripts/check.sh`：聚合入口，提交前一键自检。
+- 新增 `02-工具指南/05-GitHub-PR-与-Code-Review.md`：PR 创建、描述模板、Code Review 检查清单、合并策略与常见坑。
+
+### Changed
+
+- 文档一致性修复：移除当前规范文档中对不存在的 `weekly-weather-briefing` 的幽灵引用（README、docs/ARCHITECTURE、skill-template、05-参考资料），历史记录保留。
+- 命名统一：当前规范文档中 `find-skill`（单数）统一为实际目录名 `find-skills`（复数）。
+- README 项目结构补 `scripts/` 与 `skill-creator`，"完整示例"卖点改为参考 `skills/` 下真实在用的 Skill。
+- README 维护说明、AGENTS Git 工作流新增"提交前自检"约定（`bash scripts/check.sh`）。
+- AGENTS 仓库检索协议 `02-工具指南` 适用问题补"PR / Code Review"。
+- README 资源导航新增 PR 教程入口。
+
+### Removed
+
+- 清理 `skills/skill-start-update/output/` 孤儿目录（git 层此前已删，工作目录残留）。
+
+### Notes
+
+- `docs/ROADMAP.md` 阶段四（自动校验）标记为已完成。
+
 ## 0.11.0 - 2026-07-27
 
 ### Removed
