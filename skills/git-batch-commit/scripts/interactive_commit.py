@@ -15,7 +15,7 @@ from typing import Dict, List
 # Import sibling scripts
 sys.path.insert(0, str(Path(__file__).parent))
 from categorize_changes import get_staged_files, group_changes
-from generate_commit_message import generate_commit_messages
+from generate_commit_message import add_issue_reference, generate_commit_messages
 
 
 def stage_files(files: List[str]) -> bool:
@@ -105,11 +105,10 @@ def confirm_groups(skip_confirm: bool = False) -> bool:
     print("\n选项:")
     print("  y - 是，创建这些提交")
     print("  n - 否，取消")
-    print("  e - 编辑分组（手动模式）")
 
     while True:
         try:
-            response = input("\n是否继续创建这些提交？ [y/n/e]: ").strip().lower()
+            response = input("\n是否继续创建这些提交？ [y/n]: ").strip().lower()
         except (EOFError, OSError):
             print("\n检测到非交互式环境，已取消操作。")
             print("提示：使用 --yes 参数跳过确认，或使用 --dry-run 仅查看分组")
@@ -119,14 +118,35 @@ def confirm_groups(skip_confirm: bool = False) -> bool:
             return True
         elif response in ['n', 'no', '否']:
             return False
-        elif response in ['e', 'edit', '编辑']:
-            print("\n编辑模式尚未实现。请重新运行。")
-            return False
         else:
-            print("请输入 'y'、'n' 或 'e'。")
+            print("请输入 'y' 或 'n'。")
 
 
-def batch_commit(skip_confirm: bool = False):
+def decorate_messages(
+    groups: Dict[str, List[str]],
+    messages: Dict[str, str],
+    issue: str | None = None,
+    local_ref: str | None = None,
+) -> Dict[str, str]:
+    """Add issue/task references to generated commit messages."""
+    if not issue and not local_ref:
+        return messages
+
+    decorated = {}
+    for category, message in messages.items():
+        decorated[category] = add_issue_reference(
+            message,
+            github_issue=issue,
+            local_ref=local_ref,
+        )
+    return decorated
+
+
+def batch_commit(
+    skip_confirm: bool = False,
+    issue: str | None = None,
+    local_ref: str | None = None,
+):
     """Main function to perform batch commit.
 
     Args:
@@ -150,6 +170,12 @@ def batch_commit(skip_confirm: bool = False):
 
     # Generate commit messages for each group (files are already staged)
     messages = generate_commit_messages(groups)
+    messages = decorate_messages(
+        groups,
+        messages,
+        issue=issue,
+        local_ref=local_ref,
+    )
 
     # Display proposed groups
     display_groups(groups, messages)
@@ -211,6 +237,16 @@ def main():
         action='store_true',
         help='跳过交互式确认，自动创建提交（适用于 CI/CD 或非交互式环境）'
     )
+    parser.add_argument(
+        '--issue',
+        type=str,
+        help='关联的 GitHub Issue 编号，例如 13 或 #13；每个提交标题会追加 (#13)'
+    )
+    parser.add_argument(
+        '--local-ref',
+        type=str,
+        help='关联的本地任务引用，例如 "project-task Issue #13"，不会关闭 GitHub Issue'
+    )
 
     args = parser.parse_args()
 
@@ -223,10 +259,20 @@ def main():
 
         groups = group_changes(staged, staged=True)
         messages = generate_commit_messages(groups)
+        messages = decorate_messages(
+            groups,
+            messages,
+            issue=args.issue,
+            local_ref=args.local_ref,
+        )
         display_groups(groups, messages)
         return 0
     else:
-        return batch_commit(skip_confirm=args.yes)
+        return batch_commit(
+            skip_confirm=args.yes,
+            issue=args.issue,
+            local_ref=args.local_ref,
+        )
 
 
 if __name__ == '__main__':

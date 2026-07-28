@@ -1,5 +1,36 @@
 # 变更日志
 
+## [1.4.1] - 2026-05-19
+
+### 改进
+
+- 明确 `git-batch-commit` 是提交快捷按钮，只负责已暂存变更的拆分和提交信息生成。
+- 新增轻量 Issue/Task 引用：`--issue N` 在标题追加 `(#N)` 并写入 `Refs #N`，`--local-ref` 写入本地任务引用。
+- 明确本 Skill 不生成 `Closes #N`；Issue 关闭、PR 合并、push 和分支安全规则仍由 `git-workflow` 管理。
+
+## [1.4.0] - 2026-05-15
+
+### 变更
+
+- 将 `references/issue-pr-format.md`（Issue 与 PR 命名规范）迁移到 `git-workflow` skill，该规范与 Git 全流程工作流更相关
+- git-batch-commit 聚焦于"提交"本职，不再管理 Issue/PR 命名
+
+## [1.3.0] - 2026-05-14
+
+### 新增
+
+- 工作流新增 Subtree 推送检查（第6步）：当 `skills/subtree-publish/config/subtree-skills.json` 存在时自动执行
+
+## [1.2.5] - 2026-04-10
+
+### 新增
+
+- 新增 `references/issue-pr-format.md`：定义 Issue 与 PR 命名规范
+- Issue 类型前缀：`feat`、`bug`、`enhancement`、`docs`、`question`
+- Issue 状态标记：`[done]`（自己完成）、`[resolved]`/`[answered]`（外部）
+- PR 格式与 Commit 保持一致：`类型(模块): 描述`
+- AI 读取规则：根据状态标记区分已处理和待处理任务
+
 ## [1.2.4] - 2026-04-06
 
 ### 新增
