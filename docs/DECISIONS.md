@@ -2,6 +2,25 @@
 
 ## 决策记录
 
+### [DEC-022] - 2026-07-28 - Wave 1 OTA 内容批次：3 个 tmux worktree worker 并行写 6 篇地基文章
+
+**背景**
+工程批次（DEC-021）后，按用户「用 OTA 推进内容写作」要求，启动 Wave 1 试点（P2 第一批 6 篇地基文章）。`multi-agent-orchestration` skill 把内容写作归为「长上下文、独立提交」场景，应用 tmux 独立 worktree worker（非 Sub Agent）。
+
+**决策**
+- 3 个 worker × glm-5.2（同宿主 claude-code，继承 PM 智谱 provider env），按目录分工：W1 写 01-概念入门 2 篇、W2 写 02-工具指南 3 篇、W3 写 03-AI协作 1 篇。文件域天然隔离。
+- 每个 worker：独立 worktree + 分支 + tmux session，`templates/worker-prompt.md` 骨架（Isolation Gate / 10 分钟 Heartbeat / Commit 强制 / `status="done"` 字面值），PM 用 sentinel + cron 双层监测、不代写，收口用 writing-reviewer（文档项目）。
+- worker 只 commit 到隔离分支，不开 PR、不 push；PM 验收后 merge 到 main。
+
+**理由**
+内容写作是项目质量生命线，长上下文 + 风格统一 + 独立提交正是 tmux worker 场景（用户明确指出 Sub Agent 承载不了）。worktree 物理隔离 + scope-guard + sentinel 收口把并行风险控到最低。
+
+**影响 / 经验**
+- 6 篇文章全部产出、check.sh 通过、merge 到 main（0.14.0）。
+- 踩 6 个坑全解（见 CHANGELOG 0.14.0 Notes），为后续 Wave 沉淀可复用 spawn 配置：mcp 配置文件 + `tmux set-environment -g` 注入 provider env + send Escape 关 MCP dialog + prompt 内置 date 处理说明。
+- W1 限流中断漏 commit（§11 Hard Fail #4），PM 手动补；后续 worker prompt 已强化 commit 自检（`git log --oneline main..HEAD` 非空）。
+- 待办：writing-reviewer 批量 review 6 篇 + 读者实操验收（P2 真正完成标准）；Wave 2/3 按此模式推进剩余目录。
+
 ### [DEC-021] - 2026-07-27 - 用多代理编排并行推进 TASKS.md：工程批次走 Sub Agent，内容批次升级为 OTA tmux worker
 
 **背景**

@@ -3,6 +3,25 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.14.0 - 2026-07-28
+
+### Added
+
+- Wave 1（OTA 多代理编排）产出 P2 第一批 6 篇地基文章，3 个 tmux worktree worker × glm-5.2 并行写作、PM 收口 merge：
+  - `01-概念入门/05-工具-Skill-MCP-Plugin-Workflow-关系.md`
+  - `01-概念入门/06-一个-Skill-是怎样工作的.md`
+  - `02-工具指南/06-终端与命令行入门.md`
+  - `02-工具指南/07-项目目录与文件格式入门.md`
+  - `02-工具指南/08-开发环境与依赖入门.md`
+  - `03-AI协作与上下文/05-从需求到验收标准.md`
+
+### Notes
+
+- 按 `multi-agent-orchestration` skill 用 3 个独立 worktree worker（分支 `docs/concept-skill-mcp` / `docs/tools-terminal-env` / `docs/collab-acceptance`）并行写作，PM 不代写；sentinel（事件驱动）+ cron（兜底）双层监测。
+- 踩坑与解法：inline JSON 转义→mcp 配置文件；authority receipt→彻底清理；MCP 选择 dialog→send Escape；tmux server 继承错 provider→`tmux set-environment -g` 注入智谱凭据；`date` 被门禁拦→git 全套已 safe + 固定 timestamp；GLM 529 限流→send-keys 重投换时机。
+- W1 worker 因限流中断漏 commit，PM 按 §11 Hard Fail #4 手动补 commit。
+- 文章 `bash scripts/check.sh` 通过；待 writing-reviewer 批量 review + 读者实操验收（P2）。
+
 ## 0.13.0 - 2026-07-27
 
 ### Added
