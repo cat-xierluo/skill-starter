@@ -26,7 +26,11 @@ Skill 开发启动模板仓库，面向 OpenClaw、Claude Code 和 Skills CLI �
 
 ## 与 legal-skills 的同步关系
 
-`skills/git-batch-commit/` 和 `skills/skill-manager/` 通过 `git fetch legal-skills main` + `git checkout legal-skills/main -- skills/<name>` 从 [legal-skills](https://github.com/cat-xierluo/legal-skills) 同步最新内容;另外 3 个(`skill-template` / `find-skills` / `skill-creator`)是 starter 仓库原创,不从 upstream 同步。
+`skills/git-batch-commit/` 和 `skills/skill-manager/` 通过 `git fetch legal-skills main` + `git checkout legal-skills/main -- skills/<name>` 从 [legal-skills](https://github.com/cat-xierluo/legal-skills) 同步最新内容。其余 3 个来源不同:
+
+- `skill-template/`:starter 仓库原创,不从 upstream 同步。
+- `skill-creator/`:来自 Anthropic 官方 [anthropics/skills](https://github.com/anthropics/skills) 仓库,本仓库收录内置,暂不从 upstream 自动同步。
+- `find-skills/`:来自第三方 [vercel-labs/skills](https://github.com/vercel-labs/skills) 仓库(即 Skills CLI / skills.sh 上游),本仓库收录内置,暂不从 upstream 自动同步。
 
 - legal-skills 作为只读 remote:`git remote add legal-skills https://github.com/cat-xierluo/legal-skills.git`
 - 同步命令:`git fetch legal-skills main && git checkout legal-skills/main -- skills/git-batch-commit skills/skill-manager`
@@ -107,7 +111,7 @@ python3 scripts/main.py --task "describe what this skill should do"
 
 ### 第五步：参考真实 Skill
 
-`skills/` 下已有多个真实在用的 Skill 可直接参考，例如 `skill-template/`（骨架模板）、`skill-creator/`（Skill 创建工作流）、`git-batch-commit/`（批量提交）。
+`skills/` 下已有多个真实在用的 Skill 可直接参考,例如 `skill-template/`(starter 原创骨架模板)、`skill-creator/`(收录自 [anthropics/skills](https://github.com/anthropics/skills))、`git-batch-commit/`(同步自 [legal-skills](https://github.com/cat-xierluo/legal-skills))。
 
 ## 项目结构
 
@@ -144,9 +148,9 @@ skill-starter/
 ├── scripts/                # 仓库自检脚本（断链 + skill 完整性）
 └── skills/
     ├── skill-template/        # starter 原创：Skill 仓库骨架模板
-    ├── find-skills/           # starter 原创：仓库内 Skill 检索
+    ├── find-skills/           # 收录自 vercel-labs/skills：仓库内 Skill 检索
     ├── git-batch-commit/      # 同步自 legal-skills：批量提交拆分
-    ├── skill-creator/         # starter 原创：Skill 创建工作流
+    ├── skill-creator/         # 收录自 anthropics/skills：Skill 创建工作流
     └── skill-manager/         # 同步自 legal-skills：多 Agent 安装管理
 ```
 
@@ -179,6 +183,16 @@ skill-starter/
 - [skills.sh](https://skills.sh/)
 - [Claude Code](https://docs.claude.com/en/docs/claude-code/overview)
 - [Claude Skills Best Practices](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices)
+
+## 当前成熟度与已知限制
+
+本仓库仍在早期迭代,尚未正式发布,以下几点请知悉:
+
+- 教程体系仍在完善,`02-工具指南/`、`03-AI协作与上下文/`、`04-创建Skill/` 的部分文章仍在补充,少数导航链接可能指向仍在撰写的目录。
+- `scripts/check.sh` 仅覆盖 Markdown 断链和 `SKILL.md` 必需字段的静态检查,**通过不代表 Skill 功能真实可用**,也不构成发布质量保证。
+- 模板和示例的端到端 Agent 验证流程、CI 门禁仍在建设中,当前以人工验收为主。
+- `skills/` 下收录的第三方 Skill(`find-skills`、`skill-creator`)以“可直接参考/调用”的方式内置,不保证与上游实时一致;如需最新版本,请到对应上游仓库获取。
+- 整体处于“可用但仍在打磨”的阶段,欢迎使用和反馈,但暂不建议作为生产环境的强依赖。
 
 ## 维护说明
 

@@ -33,7 +33,8 @@ AI 代理应把它当作“先判断是否已有现成方案，再决定复用�
   - 同步方式:`git fetch legal-skills main && git checkout legal-skills/main -- skills/git-batch-commit skills/skill-manager`。
   - 同步前建议对比:`git diff legal-skills/main -- skills/<name>`,确认无冲突再覆盖。
   - 同步前自动备份到 `.starter-backups/<name>/`(该目录被 `.gitignore` 排除,不纳入版本管理)。
-- `skills/find-skills/`、`skills/skill-creator/`、`skills/skill-template/` 为 starter 仓库原创,**不从 upstream 同步**,可自由修改。
+- `skills/skill-template/` 为 starter 仓库原创,**不从 upstream 同步**,可自由修改。
+- `skills/find-skills/` 与 `skills/skill-creator/` 为第三方/官方收录(分别来自 [vercel-labs/skills](https://github.com/vercel-labs/skills) 和 [anthropics/skills](https://github.com/anthropics/skills)),本仓库收录内置并按需本地化调整,**不从 upstream 自动同步**;若上游有重要更新,建议人工对比后再合并。
 
 ---
 
@@ -248,6 +249,7 @@ docs: 更新 xxx 文档
 | 版本   | 日期       | 更新内容 |
 | :--- | :--- | :--- |
 | v1.2.5 | 2026-03-31 | 将上游同步 guide 统一移入 `04-创建Skill/`，并明确 `.claude/skills -> ../skills` 的单一来源结构 |
+| v1.2.6 | 2026-07-27 | 纠正 find-skills/skill-creator 来源标注(分别收录自 vercel-labs/skills 与 anthropics/skills,非 starter 原创) |
 | v1.2.4 | 2026-03-31 | 新增上游同步文件约定，要求 `SKILL-*-GUIDE.md` 默认通过 legal-skills 同步，不手动修改 |
 | v1.2.3 | 2026-03-31 | 调整许可证规范为按授权目标决策，补充商用边界、署名义务、同协议共享和后续商业授权考虑 |
 | v1.2.2 | 2026-03-31 | 参照 legal-skills 抽取许可证管理规范，补充许可证分类、README 许可证列和迁移 Skill 的授权约定 |
