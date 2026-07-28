@@ -67,3 +67,7 @@ output/
 
 # Starter backups — defensive copies of pre-cherry-pick skill contents
 .starter-backups/
+
+# OTA orchestration artifacts (multi-agent-orchestration) — PM 编排文件与 worktree 副本，不入业务 commit
+.claude/orchestration/
+.claude/worktrees/
