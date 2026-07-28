@@ -3,6 +3,20 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.21.0 - 2026-07-28
+
+### Added
+
+- `04-创建Skill/09-触发质量与eval.md`：触发质量教程，对齐 06/07/08 的 7 段骨架（5 步动手 / 6 条错误 / 5 题自测）。贯穿示例用 06 的 `commit-style` 跑 trigger eval 流程（trigger-evals.json 17 条：7 正 / 7 负含 3 near-miss / 3 边界）。核心概念用一张表对齐三套同义说法（CONTENT-MATRIX「正例/负例/边界/基线」/ skill-creator「should-trigger/should-not-trigger/near-miss/with-skill baseline」/ SKILL-DEV-GUIDE §13「正向/负向/边缘」）。
+
+### Fixed
+
+- `06-纯说明型-Skill.md`（两处）、`07-带脚本-Skill.md`（一处）、`08-多Skill编排.md`（两处，含 08 的下一篇主线）共 5 处「09 触发质量与 eval（暂未发布）」改为实链接。Wave 5 第二篇落地，「04-创建Skill」主线教程 06-09 全部成链。
+
+### Notes
+
+- 09 沿用 DEC-028 的 PM 单线程单篇方案；权威依据来自 `skills/skill-creator/SKILL.md` L333-405（trigger eval + run_loop 自动优化）和 `references/schemas.md`（evals.json），均为仓库内现成可读。不真跑 run_loop.py（依赖 Claude Code 子进程，超出教学范围）。
+
 ## 0.20.0 - 2026-07-28
 
 ### Added
