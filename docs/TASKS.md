@@ -136,3 +136,5 @@
 - [x] 工程批次（0.13.0）：git-batch-commit 同步至 upstream v1.4.1；skill-manager `update.sh` 修 macOS 兼容与安装/更新矛盾流程；README/AGENTS 纠正 find-skills/skill-creator 来源并新增成熟度说明；check_skills.py 升级 YAML 感知、check_links.py 扩展锚点/引用链接、check.sh 接入 bash-n/py_compile；ROADMAP/ARCHITECTURE 文档一致性修复；新增 `docs/SOURCE-INDEX.md` 与 `docs/LICENSE-PLAN.md`。
 - [x] 内容批次 Wave 1（0.14.0）：OTA 3 个 tmux worktree worker × glm-5.2 并行产出 P2 第一批 6 篇地基文章（概念入门 05/06、工具指南 06/07/08、AI 协作 05），PM 收口 merge；待 writing-reviewer review + 读者实操验收。
 - [x] 内容批次 Wave 2（0.15.0）：OTA 3 worker 并行产出 P2 第二批 4 篇安全/可靠性文章（工具指南 09 密钥安全、AI 协作 06 验证AI/07 上下文生命周期、创建Skill 05 第三方审查）；writing-reviewer 0 Critical + 3 Important（PM 已修）；待读者实操验收。
+- [x] 课程结构前置（0.16.0）：PM 直接做 `docs/CONTENT-MATRIX.md`（编号单一事实源）+ `docs/WRITING-GUIDE.md`（统一结构+示例项目+跨平台+review 教训 codify）+ README 双入口。
+- [x] 内容批次 Wave 4（0.17.0）：OTA 3 worker 并行产出 7 篇（概念入门 07 复用改造/08 权限信任/09 版本来源、AI 协作 08 分工/09 任务拆解、创建Skill 06 纯说明型/07 带脚本）；writing-reviewer 1 Critical（错字）+ ~12 Important（PM 已修：LICENSE.txt 模板不带、todos.json 路径、`/skill` 触发语义、自动备份 vs 裸 git、覆盖补丁冲突等）。

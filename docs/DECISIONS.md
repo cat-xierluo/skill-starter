@@ -2,6 +2,14 @@
 
 ## 决策记录
 
+### [DEC-025] - 2026-07-28 - Wave 4 OTA：首批严格遵循 WRITING-GUIDE 的文章，review 仅 1 Critical
+
+**背景** Wave 3 把 review 教训 codify 进 `docs/WRITING-GUIDE.md` 后，Wave 4 是首轮 worker 被要求「先 Read WRITING-GUIDE + CONTENT-MATRIX 再动笔」的批次。
+
+**决策** Wave 4 三个 worker prompt 都加了「务必先 Read docs/WRITING-GUIDE.md 与 docs/CONTENT-MATRIX.md 再动笔」，从源头约束结构/计数/术语/收尾/跨篇/事实。
+
+**影响** 7 篇产出 + merge（0.17.0）。writing-reviewer 本轮 **1 Critical（错字）+ ~12 Important**——结构/计数/术语括注/收尾/跨篇引用高度合规（前几轮的「计数错、收尾同质、术语不括注」共性问题基本消除）。剩余 Important 多为事实/逻辑/模板一致性（LICENSE.txt 模板不带、todos.json 路径、`/skill` 语义、自动备份 vs 裸 git 等），PM 已修。这进一步证明「规范前置 + worker 遵循」是可复制的质量改进闭环，比逐轮 review 返工更高效。
+
 ### [DEC-024] - 2026-07-28 - Wave 3 课程结构前置：PM 直接做（规范工作）
 
 **背景** Wave 1/2 内容批次后，TASKS P1 要求先做课程结构前置（内容矩阵 / 统一结构 / README 双入口）再继续写文章，避免边写边重排编号。

@@ -74,7 +74,7 @@ cd skills/commit-style
 ```text
 commit-style/
 ├── SKILL.md
-├── LICENSE.txt
+├── LICENSE.txt   # 需自行新增（模板不预选许可证）
 ├── CHANGELOG.md
 ├── ROADMAP.md
 ├── TASKS.md

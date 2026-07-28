@@ -41,7 +41,7 @@ todo-skill/
 
 ### 契约：脚本和 AI 之间的约定
 
-脚本不是写完能跑就行——它要被 AI 反复调用，所以得有一份**输入输出契约**，让 AI 知道「给它什么、它还什么、怎么知道成没成」。三个要素：
+脚本不是写完能跑就行——它要被 AI 反复调用，所以得有一份**输入输出契约**，让 AI 知道「给它什么、它还什么、怎么知道成没成」。下面几条要素（输入、stdout、stderr、退出码）：
 
 | 要素 | 放什么 | 谁在看 |
 |------|--------|--------|
@@ -83,7 +83,7 @@ import json
 import sys
 from pathlib import Path
 
-DB = Path(__file__).parent / "todos.json"
+DB = Path(__file__).parent.parent / "todos.json"  # 写到 Skill 根目录（不是 scripts/）；并把 todos.json 加进 .gitignore
 
 
 def load():
@@ -164,7 +164,7 @@ todo/
 │   └── todo.py
 ├── assets/
 │   └── todos.example.json
-├── LICENSE.txt
+├── LICENSE.txt   # 需自行新增（模板不预选许可证）
 ├── CHANGELOG.md
 ├── ROADMAP.md
 ├── TASKS.md
@@ -172,7 +172,7 @@ todo/
 └── .env.example
 ```
 
-`assets/todos.example.json` 放一份示例数据形态（空数组 `[ ]` 或一两条示例待办），给读者参考数据长什么样。真正的 `todos.json` 由脚本运行时生成，**不进仓库**（写进 `.gitignore`）。
+`assets/todos.example.json` 放一份示例数据形态（空数组 `[ ]` 或一两条示例待办），给读者参考数据长什么样。真正的 `todos.json` 由脚本运行时生成，**不进仓库**——模板 `.gitignore` 默认没有它，需自己加一行 `todos.json`。
 
 ### 第 2 步：写 frontmatter
 

@@ -3,6 +3,23 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.17.0 - 2026-07-28
+
+### Added
+
+- Wave 4（OTA 3 worker × glm-5.2 并行）产出 7 篇，worker 遵循 WRITING-GUIDE + CONTENT-MATRIX：
+  - `01-概念入门/07-复用改造还是新建.md`、`08-权限与信任边界.md`、`09-版本来源与维护.md`
+  - `03-AI协作与上下文/08-Prompt-Rules-Commands-Skills-MCP-Hooks-分工.md`、`09-任务拆解与迭代.md`
+  - `04-创建Skill/06-纯说明型-Skill.md`、`07-带脚本-Skill.md`
+
+### Fixed
+
+- writing-reviewer review 后 PM 修 1 Critical（08 错字「偻」→「做」）+ ~12 Important：08 `-g -y` 标志补 CLI 来源、hooks 改「以 Claude Code 为例」；09 自动备份 vs 裸 git 区分、覆盖补丁前另存、find-skills 对比 skill-creator(Apache-2.0)；08-分工 `/skill` 触发语义修正；09-任务拆解 阶段4 归类（保留回退点贯穿阶段3）；06/07 LICENSE.txt 补「模板不带、需自行新增」；07 计数「三个要素」→「下面几条」、`todos.json` 路径改 Skill 根目录 + `.gitignore` 说明。
+
+### Notes
+
+- Wave 4 是首轮 worker 严格遵循 WRITING-GUIDE 的批次，review 仅 1 Critical（错字）+ ~12 Important（多为事实/逻辑/模板一致性），结构/计数/术语括注/收尾/跨篇引用高度合规，证明规范前置进一步降质量风险。
+
 ## 0.16.0 - 2026-07-28
 
 ### Added

@@ -44,7 +44,7 @@
 | Prompt | 这一次具体要让 AI 做什么 | 你每次发消息时主动输入 | 会话级（关掉就基本没了） | 直接写在对话输入框 |
 | Rules | 项目长期稳定的规矩 | 会话开始时被自动读取（被动常驻） | 跨会话长期 | `AGENTS.md` / `CLAUDE.md` / `.claude/settings.json` |
 | Commands | 把一段固定的多步指令封装成 `/名称` 一次调用 | 你输入 `/名称` 时主动触发 | 文件级长期，内容按需调用 | `.claude/commands/*.md` |
-| Skills | 一类完整任务的可复用流程（带描述、脚本、资源） | AI 按描述判断触发，或你用 `/skill` 调用 | 文件级长期，按需加载 | Skill 目录下的 `SKILL.md` |
+| Skills | 一类完整任务的可复用流程（带描述、脚本、资源） | AI 按 `SKILL.md` 描述自动触发，或在对话里说出 Skill 名让它用 | 文件级长期，按需加载 | Skill 目录下的 `SKILL.md` |
 | MCP | 让 AI 调用仓库和对话里没有的外部工具或数据 | AI 在需要某项外部能力时发起调用 | 服务级常驻配置 | `.mcp.json` / MCP server 配置 |
 | Hooks | 「每次发生 X 就自动做 Y」的事件自动化 | 工具调用或会话事件发生时自动触发 | 配置级长期 | `.claude/settings.json` 的 hooks 段 |
 
