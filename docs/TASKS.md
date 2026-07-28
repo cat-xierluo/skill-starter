@@ -1,6 +1,6 @@
 # 当前任务
 
-> Last updated: 2026-07-27
+> Last updated: 2026-07-28
 >
 > 范围说明：用户已确认根目录 `CLAUDE.md` 的 `@include ./AGENTS.md` 保持现状，不列入修复任务。
 
@@ -20,7 +20,7 @@
 - [x] 修复 `skills/skill-manager/scripts/update.sh` 的 Bash 语法错误，重新设计“安装时删除 `.git`、更新时却依赖 `.git`”的矛盾流程，并补真实安装后更新测试。→ `grep -oP` 改 POSIX `sed -nE`；新增 `update_via_registry()` 回退路径；`file://` 真实场景测试通过。**偏离 upstream（本地补丁，可回馈）**。
 - [x] 纠正 README 和 AGENTS 对第三方 Skill 的来源描述：`find-skills`、`skill-creator` 不再标为 starter 原创。→ 已核实 find-skills←vercel-labs/skills、skill-creator←anthropics/skills，README/AGENTS 来源标注已纠正。
 - [x] 制定仓库级许可证方案：区分本仓库原创内容与第三方内容，补根许可证、第三方声明和各 Skill 的来源/许可证索引，避免用单一许可证覆盖上游内容。→ **已完成（DEC-026）**：根 `LICENSE.txt`（MIT）+ 第三方声明 + `docs/SOURCE-INDEX.md` + `docs/LICENSE-PLAN.md`；用户选定 MIT，README 加许可证段。
-- [ ] 在自动合并前建立最低质量门禁；在 CI 尚未落地前，不把 `scripts/check.sh` 的“通过”视为可发布依据。→ **部分完成**：check.sh 已接入 bash -n / py_compile / YAML frontmatter / 锚点+引用链接检查；GitHub Actions 与分支保护待接入。
+- [x] 在自动合并前建立最低质量门禁；在 CI 尚未落地前，不把 `scripts/check.sh` 的“通过”视为可发布依据。→ **已完成（DEC-027）**：`.github/workflows/check.yml` 接入 GitHub Actions（严格模式：STRICT_LINKS=1 + STRICT_SH_SYNTAX=1），main 分支保护已配置（CI 设为合并必过项，enforce_admins=false）。CI 首次运行通过（8s）。
 
 ## P1：建立可信的仓库质量基线
 
@@ -29,7 +29,7 @@
 - [x] 将 `scripts/check_skills.py` 从正则字段检查升级为标准感知的 YAML 校验，至少覆盖字段合法性、`name` 与目录名一致、名称字符/长度、description 质量和许可证声明。→ PyYAML 可用走 safe_load，否则内置 fallback；4 条 warn 规则上线，存量不阻断。
 - [ ] 为不同来源的 Skill 定义兼容校验策略：优先遵循 Agent Skills 标准，同时显式处理 Claude/Codex/OpenClaw 扩展字段，避免“一个本地校验器否定所有平台扩展”。→ **部分完成**：扩展字段（homepage/author/version）已不再报错；完整分平台策略待补。
 - [x] 把 Bash `bash -n` / ShellCheck、Python 语法检查、Skill frontmatter 校验、相对链接检查、模板独立复制测试接入统一检查入口。→ bash -n / py_compile / frontmatter / 链接已接入 check.sh；模板独立复制测试待补。
-- [ ] 增加 GitHub Actions，并将必要检查设为合并前必过项；失败信息应能直接定位到文件和规则。→ 待接入（需仓库分支保护配置）。
+- [x] 增加 GitHub Actions，并将必要检查设为合并前必过项；失败信息应能直接定位到文件和规则。→ **已完成（DEC-027）**：`.github/workflows/check.yml` 在 push/PR 触发 `scripts/check.sh`（严格模式）；main 分支保护把 `scripts/check.sh（严格模式）` 设为 required status check（app_id=15368）。
 - [x] 扩展链接检查：覆盖 Markdown 锚点、引用式链接和外部链接；外链采用超时重试、允许清单与定时任务，避免网络波动阻断普通提交。→ 锚点 + 引用式链接已接入；外链留 `--check-external` 开关占位与接入注释。
 
 ### 模板、示例与实际验证

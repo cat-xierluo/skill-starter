@@ -3,6 +3,21 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.19.0 - 2026-07-28
+
+### Added
+
+- `.github/workflows/check.yml`：GitHub Actions 合并前门禁，在 push 到 main 和 PR 时运行 `scripts/check.sh`（严格模式：`STRICT_LINKS=1` + `STRICT_SH_SYNTAX=1`，断链 / shell 语法 / py 编译 / Skill frontmatter 任一失败即 CI 红）。CI 首次运行通过（8s）。
+- main 分支保护：把 `scripts/check.sh（严格模式）` 设为 required status check（app_id=15368，GitHub Actions）；`enforce_admins=false`、`required_approving_review_count=0`（单人维护友好）。**P0 唯一残留闭环。**
+
+### Fixed
+
+- `docs/CONTENT-MATRIX.md` 与实际产出文件偏差：Wave 4 已写的 7 篇（概念入门 07/08/09、AI 协作 08/09、创建Skill 06/07）勾 ✅；03-AI协作「多 Agent 协作入门」「贯穿案例」顺延为 10/11（实际 08=分工、09=任务拆解已占用）。
+
+### Notes
+
+- 仓库现具备完整质量门禁链路：本地 `scripts/check.sh` + 远端 GitHub Actions + 分支保护。CI 无第三方依赖（仅用 Python 标准库），`ubuntu-latest` + `python-version: 3.x` 即可运行。
+
 ## 0.18.0 - 2026-07-28
 
 ### Added

@@ -2,6 +2,14 @@
 
 ## 决策记录
 
+### [DEC-027] - 2026-07-28 - 接入 GitHub Actions 严格门禁 + main 分支保护（闭环 P0 唯一残留）
+
+**背景** TASKS P0 最后一项「在自动合并前建立最低质量门禁」长期挂在「部分完成」：`scripts/check.sh` 已接入 bash -n / py_compile / YAML frontmatter / 锚点+引用链接检查，但 GitHub Actions 与分支保护一直未接入，导致「check.sh 通过」无法作为可发布依据。核查发现仓库在严格模式（`STRICT_LINKS=1` + `STRICT_SH_SYNTAX=1`）下链接与 shell 语法已全绿，历史债务已清，具备上线严格门禁的条件。
+
+**决策** （1）新增 `.github/workflows/check.yml`，在 push 到 main 和 PR 时运行 `scripts/check.sh`，**启用严格模式**（断链 / shell 语法 / py 编译 / Skill frontmatter 任一失败即 CI 红）；CI 仅依赖 Python 标准库，无需 `pip install`。（2）配置 main 分支保护，把 `scripts/check.sh（严格模式）`（app_id=15368）设为 required status check；`enforce_admins=false`（管理员可绕过，避免单人维护被锁死）、`required_approving_review_count=0`（不强制他人审批）。（3）API 配置踩坑：`required_status_checks` 的 `contexts` 与 `checks` 互斥（oneOf），混用导致 422，最终只用 `checks: [{context, app_id}]`。
+
+**影响** P0 唯一残留闭环；仓库现具备完整质量门禁链路（本地 check.sh + 远端 Actions + 分支保护）。后续任何断链、shell 语法错误、frontmatter 缺失的提交都会在 PR 阶段被拦下。CONTENT-MATRIX 与实际产出偏差同步修正（DEC-025 Wave 4 已写篇勾 ✅）。
+
 ### [DEC-026] - 2026-07-28 - 仓库原创内容采用 MIT 许可证（用户拍板，闭环 DEC-013）
 
 **背景** DEC-013 规定不擅自替仓库选定 LICENSE，留待维护者拍板；`docs/LICENSE-PLAN.md` 给出 A（MIT）/ B（MIT+CC-BY-4.0）/ C（CC-BY-NC-SA-4.0）三方案。维护者于 2026-07-28 明确选定 MIT。
