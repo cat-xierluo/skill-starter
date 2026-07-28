@@ -1,0 +1,37 @@
+name: check
+
+# 合并前门禁：运行 scripts/check.sh（严格模式）
+# - 断链 / shell 语法错误 / Python 编译失败 / Skill frontmatter 缺失 任一失败即 CI 红
+# - 启用严格模式：STRICT_LINKS=1 + STRICT_SH_SYNTAX=1（当前仓库已全绿）
+# 本地复跑：bash scripts/check.sh（默认非严格）；严格复跑对齐 CI：
+#   STRICT_LINKS=1 STRICT_SH_SYNTAX=1 bash scripts/check.sh
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: scripts/check.sh（严格模式）
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          # check_links.py / check_skills.py 仅用标准库（os/re/sys）；
+          # PyYAML 可选，缺失时走内置 fallback。无需 pip install。
+          python-version: '3.x'
+
+      - name: 运行自检（严格模式）
+        env:
+          STRICT_LINKS: '1'
+          STRICT_SH_SYNTAX: '1'
+        run: bash scripts/check.sh
