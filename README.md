@@ -203,6 +203,24 @@ skill-starter/
 - `skills/` 下收录的第三方 Skill(`find-skills`、`skill-creator`)以“可直接参考/调用”的方式内置,不保证与上游实时一致;如需最新版本,请到对应上游仓库获取。
 - 整体处于“可用但仍在打磨”的阶段,欢迎使用和反馈,但暂不建议作为生产环境的强依赖。
 
+## 许可证
+
+本仓库为混合来源仓库：
+
+- **原创内容**（根级教程 Markdown、`docs/`、`scripts/`、`skills/skill-template/`）采用 **MIT** 许可证（见根目录 `LICENSE.txt`）。
+- **第三方 Skill** 各自保留原许可证，**不受**根 LICENSE 覆盖：
+
+  | 目录 | 上游 | 许可证 |
+  | :--- | :--- | :--- |
+  | `skills/git-batch-commit` | [legal-skills](https://github.com/cat-xierluo/legal-skills) | MIT |
+  | `skills/skill-manager` | [legal-skills](https://github.com/cat-xierluo/legal-skills) | MIT |
+  | `skills/skill-creator` | [anthropics/skills](https://github.com/anthropics/skills) | Apache-2.0 |
+  | `skills/find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills) | 待确认（上游未提供 LICENSE） |
+
+  完整来源、同步 commit SHA、本地补丁见 `docs/SOURCE-INDEX.md`；方案讨论见 `docs/LICENSE-PLAN.md`。
+
+使用或再分发时，请同时遵守根 LICENSE 与各第三方目录内的许可证条款；若两者冲突，针对相应目录的内容以第三方许可证优先。
+
 ## 维护说明
 
 本仓库本身也按 Skill 项目来维护：

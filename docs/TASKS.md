@@ -19,7 +19,7 @@
 - [x] 修复 `skills/git-batch-commit/SKILL.md` 的 YAML frontmatter，并核对本地版本、脚本与 `CHANGELOG.md` / `docs/DECISIONS.md` 所记录版本是否一致。→ 已通过 `git checkout legal-skills/main -- skills/git-batch-commit` 整目录同步至 upstream v1.4.1，无本地补丁。
 - [x] 修复 `skills/skill-manager/scripts/update.sh` 的 Bash 语法错误，重新设计“安装时删除 `.git`、更新时却依赖 `.git`”的矛盾流程，并补真实安装后更新测试。→ `grep -oP` 改 POSIX `sed -nE`；新增 `update_via_registry()` 回退路径；`file://` 真实场景测试通过。**偏离 upstream（本地补丁，可回馈）**。
 - [x] 纠正 README 和 AGENTS 对第三方 Skill 的来源描述：`find-skills`、`skill-creator` 不再标为 starter 原创。→ 已核实 find-skills←vercel-labs/skills、skill-creator←anthropics/skills，README/AGENTS 来源标注已纠正。
-- [ ] 制定仓库级许可证方案：区分本仓库原创内容与第三方内容，补根许可证、第三方声明和各 Skill 的来源/许可证索引，避免用单一许可证覆盖上游内容。→ **部分完成**：`docs/SOURCE-INDEX.md`（来源/许可证索引）+ `docs/LICENSE-PLAN.md`（三方案选项）已就绪；根 LICENSE 待用户选定（DEC-013）。
+- [x] 制定仓库级许可证方案：区分本仓库原创内容与第三方内容，补根许可证、第三方声明和各 Skill 的来源/许可证索引，避免用单一许可证覆盖上游内容。→ **已完成（DEC-026）**：根 `LICENSE.txt`（MIT）+ 第三方声明 + `docs/SOURCE-INDEX.md` + `docs/LICENSE-PLAN.md`；用户选定 MIT，README 加许可证段。
 - [ ] 在自动合并前建立最低质量门禁；在 CI 尚未落地前，不把 `scripts/check.sh` 的“通过”视为可发布依据。→ **部分完成**：check.sh 已接入 bash -n / py_compile / YAML frontmatter / 锚点+引用链接检查；GitHub Actions 与分支保护待接入。
 
 ## P1：建立可信的仓库质量基线

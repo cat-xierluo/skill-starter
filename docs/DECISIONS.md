@@ -2,6 +2,14 @@
 
 ## 决策记录
 
+### [DEC-026] - 2026-07-28 - 仓库原创内容采用 MIT 许可证（用户拍板，闭环 DEC-013）
+
+**背景** DEC-013 规定不擅自替仓库选定 LICENSE，留待维护者拍板；`docs/LICENSE-PLAN.md` 给出 A（MIT）/ B（MIT+CC-BY-4.0）/ C（CC-BY-NC-SA-4.0）三方案。维护者于 2026-07-28 明确选定 MIT。
+
+**决策** 仓库**原创内容**（教程文档、scripts、skill-template、docs、根级 Markdown）采用 MIT；根 `LICENSE.txt` 已创建，内含第三方内容声明。第三方 Skill（git-batch-commit / skill-manager = MIT 来自 legal-skills；skill-creator = Apache-2.0 来自 anthropics；find-skills = 待确认来自 vercel-labs）**保留原许可证**，不被根 LICENSE 覆盖。
+
+**影响** DEC-013 待决策项闭环；README 新增「许可证」段（含第三方 Skill 许可证表）；LICENSE-PLAN 标记选定 MIT；TASKS P0 许可证项标记完成。`skills/find-skills/` 上游许可证仍待确认（保留收录 + 标注，不替上游下结论，见 SOURCE-INDEX）。
+
 ### [DEC-025] - 2026-07-28 - Wave 4 OTA：首批严格遵循 WRITING-GUIDE 的文章，review 仅 1 Critical
 
 **背景** Wave 3 把 review 教训 codify 进 `docs/WRITING-GUIDE.md` 后，Wave 4 是首轮 worker 被要求「先 Read WRITING-GUIDE + CONTENT-MATRIX 再动笔」的批次。

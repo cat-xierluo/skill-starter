@@ -3,6 +3,22 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.18.0 - 2026-07-28
+
+### Added
+
+- 根 `LICENSE.txt`（MIT，含第三方内容声明：git-batch-commit/skill-manager=MIT、skill-creator=Apache-2.0、find-skills=待确认，均保留原许可）。
+- README 新增「许可证」段（原创 MIT + 第三方 Skill 许可证表 + 指向 SOURCE-INDEX/LICENSE-PLAN）。
+
+### Changed
+
+- `docs/LICENSE-PLAN.md` 标记已选定 MIT（DEC-026），第 5 节决策清单闭环。
+- 清理已合并的 worktree/分支：Wave 1-4 全部 worker 分支（收口时已删）+ 历史分支 `worktree-suitagent-vscode-extension`（已合并 main，删除）；`.claude/worktrees/` 残留目录清空。
+
+### Notes
+
+- DEC-013 待决策项闭环（用户拍板 MIT）。仓库现具备完整许可证方案：原创 MIT + 第三方保留原许可 + 来源索引。
+
 ## 0.17.0 - 2026-07-28
 
 ### Added
