@@ -3,6 +3,25 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.15.0 - 2026-07-28
+
+### Added
+
+- Wave 2（OTA）产出 P2 第二批 4 篇安全/可靠性文章（3 个 tmux worktree worker × glm-5.2 并行）：
+  - `02-工具指南/09-环境变量与密钥安全.md`
+  - `03-AI协作与上下文/06-验证-AI-的工作.md`
+  - `03-AI协作与上下文/07-上下文生命周期.md`
+  - `04-创建Skill/05-第三方-Skill-安全审查.md`
+
+### Fixed
+
+- writing-reviewer review 后 PM 修 3 Important：09 `gh auth token` 语义（打印 token 非撤销）、06 `lint` 首次括注、07「2 类上下文」与 03 篇「7 层来源」显式映射。
+
+### Notes
+
+- Wave 2 prompt 内置 Wave 1 review 教训，本轮 writing-reviewer **0 Critical**（Wave 1 是 3 Critical），质量提升明显。
+- 事实核对：4 篇引用的第三方 Skill 来源/许可证/issue 与 `docs/SOURCE-INDEX.md` 全部一致，无编造 URL/SHA；假 Token 规范（`sk-fake-DEMO1234`）。
+
 ## 0.14.0 - 2026-07-28
 
 ### Added

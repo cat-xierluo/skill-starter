@@ -2,6 +2,14 @@
 
 ## 决策记录
 
+### [DEC-023] - 2026-07-28 - Wave 2 OTA 内容批次：3 worker 并行写 4 篇安全/可靠性文章，review 0 Critical
+
+**背景** Wave 1（DEC-022）跑通 OTA 流程后，启动 Wave 2（P2 第二批安全与可靠性）。
+
+**决策** 复用 Wave 1 验证的 spawn 配置（mcp 配置文件 + `tmux set-environment` 注入 provider env + send Escape 关 MCP dialog + prompt 内 date/commit 自检），3 worker × glm-5.2 并行：W4 密钥安全、W5 验证AI+上下文生命周期、W6 第三方 Skill 审查。**关键改进：Wave 2 prompt 内置 Wave 1 review 教训**（计数准确/标题名实相符/术语首次括注/收尾别用"不是X而是Y"/macOS-Linux 差异标注/commit 后 `git log` 自检）。
+
+**影响** 4 篇产出 + merge（0.15.0）。writing-reviewer 本轮 **0 Critical + 3 Important**（Wave 1 是 3 Critical + 9 Important）——证明把 review 教训前置进 prompt 能显著降质量风险，是可复制的质量改进闭环。3 Important（`gh auth token` 语义、`lint` 括注、2 类上下文 vs 7 层映射）PM 已修。事实核对全部通过（第三方 Skill 来源/许可证/issue 与 SOURCE-INDEX 一致，无编造）。
+
 ### [DEC-022] - 2026-07-28 - Wave 1 OTA 内容批次：3 个 tmux worktree worker 并行写 6 篇地基文章
 
 **背景**

@@ -113,7 +113,7 @@
 ## P2：内容验收与发布节奏
 
 - [x] 第一批优先完成 6 篇地基文章：工具/Skill/MCP 关系、Skill 运行过程、终端与路径、文件格式、开发环境与依赖、从需求到验收标准。→ Wave 1（OTA 3 个 tmux worktree worker × glm-5.2）已产出并 merge（见 0.14.0）；待 writing-reviewer review + 读者实操验收。
-- [ ] 第二批完成安全与可靠性文章：密钥安全、第三方 Skill 审查、验证 AI 工作、上下文生命周期。
+- [x] 第二批完成安全与可靠性文章：密钥安全、第三方 Skill 审查、验证 AI 工作、上下文生命周期。→ Wave 2（OTA 3 worker × glm-5.2）已产出并 merge（0.15.0）；writing-reviewer 通过（0 Critical + 3 Important 已修）；待读者实操验收。
 - [ ] 第三批完成端到端案例和三个层级的 Skill 创建教程，再集中调整 README 导航与文章编号。
 - [ ] 每批邀请至少一名没有 Skill 开发经验的读者按顺序实操，记录卡点、完成时间和无法独立完成的步骤，再据此修订。
 - [ ] 内容完成不以“文件已创建”为准：读者必须能按文档得到预期结果，所有命令、链接和示例输出都应经过复跑验证。
@@ -135,3 +135,4 @@
 - [x] 提供相对链接和 Skill 基础结构检查入口 `scripts/check.sh`。
 - [x] 工程批次（0.13.0）：git-batch-commit 同步至 upstream v1.4.1；skill-manager `update.sh` 修 macOS 兼容与安装/更新矛盾流程；README/AGENTS 纠正 find-skills/skill-creator 来源并新增成熟度说明；check_skills.py 升级 YAML 感知、check_links.py 扩展锚点/引用链接、check.sh 接入 bash-n/py_compile；ROADMAP/ARCHITECTURE 文档一致性修复；新增 `docs/SOURCE-INDEX.md` 与 `docs/LICENSE-PLAN.md`。
 - [x] 内容批次 Wave 1（0.14.0）：OTA 3 个 tmux worktree worker × glm-5.2 并行产出 P2 第一批 6 篇地基文章（概念入门 05/06、工具指南 06/07/08、AI 协作 05），PM 收口 merge；待 writing-reviewer review + 读者实操验收。
+- [x] 内容批次 Wave 2（0.15.0）：OTA 3 worker 并行产出 P2 第二批 4 篇安全/可靠性文章（工具指南 09 密钥安全、AI 协作 06 验证AI/07 上下文生命周期、创建Skill 05 第三方审查）；writing-reviewer 0 Critical + 3 Important（PM 已修）；待读者实操验收。
