@@ -36,6 +36,15 @@ Skill 开发启动模板仓库，面向 OpenClaw、Claude Code 和 Skills CLI �
 - 同步命令:`git fetch legal-skills main && git checkout legal-skills/main -- skills/git-batch-commit skills/skill-manager`
 - 同步前可对比:`git diff skill-starter/main legal-skills/main -- skills/<name>`
 
+## 学习入口
+
+本仓库有两种用法，按你的情况选：
+
+- **零基础顺序学习**：按 `docs/CONTENT-MATRIX.md` 的学习主线，从 `01-概念入门/` → `02-工具指南/` → `03-AI协作与上下文/` → `04-创建Skill/` 顺序读。每篇都有「前置知识」和「下一篇」，跟着走即可。
+- **已有经验，按问题查阅**：看下方「资源导航」表格，直接跳到能回答你问题的文章。
+
+教程写作遵循 `docs/WRITING-GUIDE.md`（统一结构、贯穿示例项目 `todo.py`、跨平台标注）。
+
 ## 默认使用路径
 
 这个仓库不是只教你“怎么从零写 Skill”，而是先帮你判断要不要自己写。

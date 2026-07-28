@@ -2,6 +2,14 @@
 
 ## 决策记录
 
+### [DEC-024] - 2026-07-28 - Wave 3 课程结构前置：PM 直接做（规范工作）
+
+**背景** Wave 1/2 内容批次后，TASKS P1 要求先做课程结构前置（内容矩阵 / 统一结构 / README 双入口）再继续写文章，避免边写边重排编号。
+
+**决策** PM 直接做，不派 OTA worker。理由：① 规范文档连贯性强，1 个任务无并行优势；② 需全局视角（梳理已写 10 篇 + 规划剩余 + codify 两轮 review 教训），PM 掌握全貌；③ §2 例外允许 PM 写编排/规范文档。
+
+**影响** 新增 `docs/CONTENT-MATRIX.md`（编号单一事实源）、`docs/WRITING-GUIDE.md`（统一结构 + 示例项目 todo.py + 跨平台 + Wave 1/2 review 教训 codify），README 加双入口。后续 Wave 写文章须先查 CONTENT-MATRIX 定编号、遵循 WRITING-GUIDE，从源头降低 review 返工。
+
 ### [DEC-023] - 2026-07-28 - Wave 2 OTA 内容批次：3 worker 并行写 4 篇安全/可靠性文章，review 0 Critical
 
 **背景** Wave 1（DEC-022）跑通 OTA 流程后，启动 Wave 2（P2 第二批安全与可靠性）。
