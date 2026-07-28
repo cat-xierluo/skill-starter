@@ -3,6 +3,29 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.13.0 - 2026-07-27
+
+### Added
+
+- 新增 `docs/SOURCE-INDEX.md`：`skills/` 下 5 个 skill 的来源类型、来源 URL、同步 commit SHA、许可证、本地补丁、最近核对日期的事实索引（source lock）。
+- 新增 `docs/LICENSE-PLAN.md`：仓库级许可证方案（区分原创 vs 第三方内容），给出 MIT / MIT+CC-BY-4.0 / CC-BY-NC-SA-4.0 三个选项与利弊，附第三方声明模板；未替仓库选定具体 LICENSE（遵循 DEC-013）。
+- README 新增「当前成熟度与已知限制」小节，诚实说明早期迭代状态、check.sh 仅静态检查（通过≠可用）、CI 与端到端验证仍在建设。
+- `scripts/check.sh` 新增「脚本语法检查」段：所有 `.sh` 跑 `bash -n`，所有 `.py` 跑 `python3 -m py_compile`。
+
+### Changed
+
+- `skills/git-batch-commit/` 通过 `git checkout legal-skills/main --` 整目录同步至 upstream v1.4.1（SKILL.md version 1.2.4→1.4.1，顺带同步 CHANGELOG/references/scripts 的版本演进）；与根 CHANGELOG 0.9.0、DEC-020 记录一致，无本地补丁。
+- `skills/skill-manager/scripts/update.sh`：`grep -oP` 改 POSIX `sed -nE`（macOS BSD + GNU 兼容）；新增 `update_via_registry()` 回退路径，解决「安装删 `.git`、更新依赖 `.git`」矛盾流程；`((count++))` 改算术展开；`file://` 真实场景更新测试通过。偏离 upstream（本地补丁）。
+- `scripts/check_skills.py`：正则 → 标准 YAML 校验（PyYAML 可用走 `safe_load`，否则内置 fallback，非硬依赖）；新增 warn 规则（name 与目录名一致、name 字符/长度、description 质量、license 声明），存量只 warn 不阻断，兼容扩展字段。
+- `scripts/check_links.py`：新增 Markdown 锚点检查与引用式链接检查；外部链接默认只计数，留 `--check-external` 开关占位与接入注释。
+- README / AGENTS 纠正第三方 Skill 来源：`find-skills`（vercel-labs/skills）、`skill-creator`（anthropics/skills）不再标为 starter 原创，附来源链接；AGENTS 变更历史追加 v1.2.6。
+- `docs/ROADMAP.md` / `docs/ARCHITECTURE.md` 文档一致性修复：ROADMAP 阶段四速览表与任务详情矛盾消除、`status/` 幽灵路径清理 4 处、`weekly-weather-briefing`/完整示例幽灵引用修正、更新时间刷新到 2026-07-27。
+
+### Notes
+
+- 收口验证：`bash scripts/check.sh` EXIT 0（脚本语法 0 warn、149 链接有效、5 skill 必需项全齐；`STRICT_SH_SYNTAX=1 STRICT_LINKS=1` 严格模式亦通过）。仅 7 条 license/CHANGELOG 缺失 warn（真实历史存量，已记录于 SOURCE-INDEX，根 LICENSE 待用户选定）。
+- 本批次按 `multi-agent-orchestration` skill 用 6 个并行同宿主 Sub Agent 推进（DEC-021）；后续内容写作批次将升级为 OTA tmux worktree worker。
+
 ## 0.12.0 - 2026-07-27
 
 ### Added

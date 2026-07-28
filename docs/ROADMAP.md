@@ -1,6 +1,6 @@
 # 项目路线图
 
-> Last updated: 2026-03-30
+> Last updated: 2026-07-27
 > 本文是 starter 仓库的长期规划和阶段进展概览。
 
 ## 项目愿景
@@ -11,8 +11,8 @@
 
 - 已建立中文学习资料体系
 - 已提供基础模板 `skills/skill-template/`
-- 已补齐仓库自身的 `docs/`、`status/`、`CHANGELOG.md`
-- 已增加完整示例 Skill，用于展示协作文档体系如何落地
+- 已补齐仓库自身的 `docs/`、`CHANGELOG.md`
+- 已汇集多个真实在用 Skill（见 `skills/`），可作为协作文档落地的参考
 
 ## 阶段状态速览
 
@@ -20,8 +20,8 @@
 | :--- | :--- | :--- | :--- |
 | 阶段一：资料收拢 | 梳理 Skill 概念、工具和参考资料 | 🟢 已完成 | 已具备基础学习路径 |
 | 阶段二：模板收敛 | 统一模板、教程和目录结构 | 🟢 已完成 | 已修正路径、链接和模板骨架 |
-| 阶段三：协作增强 | 为 starter 和示例补齐 docs/status/changelog | 🟢 已完成 | 已加入协作文档模板 |
-| 阶段四：自动校验 | 增加脚本校验断链和结构一致性 | 🟢 已完成 | `scripts/check.sh` 覆盖断链 + skill 完整性 |
+| 阶段三：协作增强 | 为 starter 和示例补齐 docs/changelog | 🟢 已完成 | 已加入协作文档模板 |
+| 阶段四：自动校验 | 增加脚本校验断链和结构一致性 | 🟢 已完成 | 基础断链 + 结构检查已就绪；YAML 感知校验与 CI 门禁见 docs/TASKS.md P1 |
 | 阶段五：示例扩展 | 增加更多垂直领域示例 Skill | ⚪ 未开始 | 如 GitHub、Feishu、SEO 等 |
 
 ## 任务详情
@@ -44,16 +44,18 @@
 - [x] 为 starter 仓库补充 `CHANGELOG.md`
 - [x] 为 starter 仓库补充 `docs/ROADMAP.md`
 - [x] 为 starter 仓库补充 `docs/ARCHITECTURE.md`
-- [x] 为 starter 仓库补充 `status/TASKS.md`
-- [x] 为 starter 仓库补充 `status/DECISIONS.md`
+- [x] 为 starter 仓库补充 `docs/TASKS.md`
+- [x] 为 starter 仓库补充 `docs/DECISIONS.md`
 - [x] 为模板增加协作文档模板
-- [x] 为仓库增加完整示例 Skill
+- [x] 汇集 `skills/` 下真实在用的 Skill 作为参考（skill-template / find-skills / git-batch-commit / skill-creator / skill-manager）
 
 ### 阶段四：自动校验
 
-- [ ] 增加断链检查脚本
-- [ ] 增加模板完整性检查脚本
-- [ ] 增加示例 Skill 自检脚本
+- [x] 增加断链检查脚本（`scripts/check_links.py`）
+- [x] 增加模板完整性检查脚本（`scripts/check_skills.py`）
+- [x] 增加示例 Skill 自检脚本（`scripts/check.sh` 聚合入口）
+
+> 备注：基础断链 + 结构检查已就绪；YAML 感知校验、ShellCheck、CI 门禁等更高质量要求见 `docs/TASKS.md` P1。
 
 ## 进度日志
 

@@ -2,6 +2,31 @@
 
 ## 决策记录
 
+### [DEC-021] - 2026-07-27 - 用多代理编排并行推进 TASKS.md：工程批次走 Sub Agent，内容批次升级为 OTA tmux worker
+
+**背景**
+用户要求按 `docs/TASKS.md` 用 Multi-Agent Orchestration 并行推进，直至完成。TASKS 体量极大，混合了工程修复（P0）、校验/模板/同步（P1）、约 30 篇零基础教程写作（P1 学习主线）与需读者实操的验收（P2）。本仓库已收录 `legal-skills` 的 `multi-agent-orchestration` skill，其 §2 把执行模式分为 PM 直接处理 / 同宿主 Subagent / tmux 独立 CLI session 等，并明确「短任务一发跑完」用 Subagent、长上下文独立提交用 tmux worker。
+
+**选项**
+1. 全部任务统一用一种模式（要么全 Sub Agent，要么全 tmux worker）。
+2. 按任务性质分流：工程修复（窄范围、可一发跑完、文件域独立）用同宿主 Sub Agent 并行；内容写作（长上下文、独立提交、需风格统一）升级为 OTA tmux worktree worker。
+3. 串行逐个推进，不用多代理。
+
+**决策**
+选择选项 2。第一批「工程修复 + 校验 + 文档一致性 + 来源索引」拆成 6 个文件域互不重叠的工作包（WP1–WP6），用 Claude Code 同宿主 Sub Agent 并行执行，PM（主会话）负责派工、验收、跑 `check.sh`、收口治理文档。该批次符合 skill §2「同宿主 Subagent = 窄范围/短任务一发跑完」场景。后续内容写作批次将升级为 OTA tmux worktree worker（每目录一 worker、独立分支+PR、`writing-reviewer` review）。
+
+**理由**
+- 工程修复是确定性、可客观验证（check.sh / bash -n / 真实场景测试）的短任务，Sub Agent 足够且启动成本低；skill 自身也把这类任务划给 Subagent。
+- 内容写作是项目质量生命线，长上下文 + 独立提交 + 风格一致性要求，正是 tmux worktree worker 的场景；Sub Agent 难以承载其复杂度（用户明确指出）。
+- 文件域隔离（skills/git-batch-commit、skills/skill-manager/scripts、README+AGENTS、scripts/、docs/ROADMAP+ARCHITECTURE、新建 docs 文件）保证并行安全，收口验证全绿。
+
+**影响 / upstream 处理**
+- `skills/git-batch-commit/`：通过 `git checkout legal-skills/main --` 整目录同步至 upstream v1.4.1，**无本地补丁**，符合 AGENTS upstream 优先原则。
+- `skills/skill-manager/scripts/update.sh`：upstream 仍有 `grep -oP` + 安装/更新矛盾，**本地修复偏离 upstream**（POSIX sed + `update_via_registry` 双路径），属可回馈 upstream 的本地补丁；待按 TASKS P1 正式标记为 fork/派生版。
+- 新增 `docs/SOURCE-INDEX.md`、`docs/LICENSE-PLAN.md`；许可证方案给三选项，**未替仓库选定 LICENSE**（遵循 DEC-013）。
+- 收口验证：`update.sh bash -n` PASS、`check.sh` EXIT 0（149 链接有效、5 skill 必需项全齐、严格模式亦通过），仅 7 条 license/CHANGELOG 缺失 warn（真实存量，已入 SOURCE-INDEX）。
+- 后续：内容写作批次按 OTA `templates/worker-prompt.md` 骨架启动 worktree worker，PM 不直接写业务内容，收口用 `writing-reviewer`。
+
 ### [DEC-020] - 2026-07-27 - 从 legal-skills upstream 同步 `git-batch-commit` 与 `skill-manager`，保留 4 个 starter 原创 skill
 
 **背景**
