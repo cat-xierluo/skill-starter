@@ -159,6 +159,7 @@ max_items: 5
 
 ## 相关链接
 
-- [Skill 开发总指南](../../04-创建Skill/SKILL-DEV-GUIDE.md)
-- [Skill 编排指南](../../04-创建Skill/SKILL-ORCHESTRATION-GUIDE.md)
+> 以下链接指向本 starter 仓库内的教程，复制到独立仓库后需自行替换或删除。
+
+- Skill 开发总指南、编排指南：见本 starter 仓库 `04-创建Skill/` 目录（`SKILL-DEV-GUIDE.md`、`SKILL-ORCHESTRATION-GUIDE.md`）；独立仓库可参考 [Skills.sh](https://skills.sh/) 官方文档。
 - [Skills.sh](https://skills.sh/)

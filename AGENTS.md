@@ -93,7 +93,8 @@ AI 代理应把它当作“先判断是否已有现成方案，再决定复用�
 
 - 本仓库采用 `legal-skills` 同款结构：`.claude/skills` 是指向 `../skills` 的符号链接。
 - 根目录 `skills/` 是 Skill 源文件的单一来源，Claude Code 通过 `.claude/skills/` 读取这些 Skill。
-- 同时为多 Agent 共享同一来源,在项目根目录提供以下相对符号链接:
+- 同时为多 Agent 共享同一来源,在项目根目录提供以下相对符号链接（核对日期 2026-07-29）:
+  - `.agents/skills -> ../.claude/skills`
   - `.codex/skills -> ../.claude/skills`
   - `.openclaw/skills -> ../.claude/skills`
   - `.workbuddy/skills -> ../.claude/skills`
