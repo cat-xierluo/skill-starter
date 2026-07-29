@@ -23,8 +23,8 @@
 | 2. 工具基础 | 会终端 | 装好 Python/Node、懂依赖与虚拟环境 | 02-工具指南/08-开发环境 | ✅ |
 | 2. 工具基础 | 会终端 | 会管密钥、懂 `.env`/`.gitignore`、泄漏处置 | 02-工具指南/09-密钥安全 | ✅ |
 | 2. 工具基础 | 会终端 | 会 Git 提交/分支/冲突/恢复 | 02-工具指南/01-Git、04-提交规范 | ✅（待扩冲突/revert/reset） |
-| 2. 工具基础 | 会 Git | 会 GitHub Issue/Fork/Release/Actions/分支保护 | 02-工具指南/02-GitHub、05-PR与CR | ✅（待扩） |
-| 2. 工具基础 | 会 Git/PR | 能复现一次 PR 全流程（作者+审查者视角） | 02-工具指南/05-PR与CR（扩成练习） | ⏳ |
+| 2. 工具基础 | 会 Git | 会 GitHub Issue/Fork/Release/Actions/分支保护 | 02-工具指南/02-GitHub、05-PR与CR | ✅ |
+| 2. 工具基础 | 会 Git/PR | 能复现一次 PR 全流程（作者+审查者视角） | 02-工具指南/05-PR与CR | ✅ |
 | 2. 工具基础 | 会依赖 | 懂测试/Lint/CI 是什么、本地 vs 远程门禁 | 02-工具指南/10-测试LintCI | ✅ |
 | 3. AI 协作 | 有心智模型 | 把模糊想法写成可验收需求 | 03-AI协作/05-从需求到验收 | ✅ |
 | 3. AI 协作 | 会验收 | 知道 Prompt/Rules/Commands/Skills/MCP/Hooks 分工 | 03-AI协作/08-Prompt-Rules-Commands-Skills-MCP-Hooks-分工 | ✅ |
