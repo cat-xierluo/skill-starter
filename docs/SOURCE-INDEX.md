@@ -1,6 +1,6 @@
 # Skill 来源与许可证索引（SOURCE-INDEX）
 
-> Last updated: 2026-07-27
+> Last updated: 2026-07-29
 >
 > 本文件是仓库级"第三方来源清单（source lock）"的事实层：记录 `skills/` 下每个 Skill 的来源类型、上游 URL、同步 commit SHA、许可证、本地补丁与最近核对日期。
 >
@@ -14,7 +14,7 @@
 | `skills/find-skills` | 第三方收录 | https://github.com/vercel-labs/skills （`skills/find-skills/SKILL.md`） | 待确认（未做 SHA lock） | 待确认（仓库根未提供 LICENSE，GitHub API `license=null`，见 [vercel-labs/skills#946](https://github.com/vercel-labs/skills/issues/946)） | 待核对 | 2026-07-27 |
 | `skills/git-batch-commit` | legal-skills 同步 | https://github.com/cat-xierluo/legal-skills | `efde445`（`legal-skills/main` 上游最新：`feat(git-batch-commit): 新增同 Skill 内伴随变更合并规则`，版本 1.4.1） | MIT（frontmatter `license: MIT`；上游仓库根 LICENSE 为 MIT） | 当前工作目录内容与 `legal-skills/main` 一致；历史提交里曾滞后于 upstream（HEAD 提交版本为 1.2.4，工作目录已升级到 1.4.1，**未提交**） | 2026-07-27 |
 | `skills/skill-creator` | 第三方收录 | https://github.com/anthropics/skills （`skills/skill-creator/SKILL.md`） | 待确认（未做 SHA lock） | Apache-2.0（目录内 `LICENSE.txt` 为 Apache License 2.0；frontmatter 未显式声明 `license` 字段） | 待核对 | 2026-07-27 |
-| `skills/skill-manager` | legal-skills 同步 | https://github.com/cat-xierluo/legal-skills | `f801450`（`legal-skills/main` 上游最新：`fix(skill-manager): install.sh 对同路径 skills 去重`，版本 1.7.0） | MIT（`LICENSE.txt` 头部为 MIT；frontmatter 写 `license: Complete terms in LICENSE.txt`） | 无（`git diff HEAD legal-skills/main -- skills/skill-manager` 为空） | 2026-07-27 |
+| `skills/skill-manager` | legal-skills 同步（**fork/派生版**，见下方说明） | https://github.com/cat-xierluo/legal-skills | `f801450`（`legal-skills/main` 上游最新：`fix(skill-manager): install.sh 对同路径 skills 去重`，版本 1.7.0） | MIT（`LICENSE.txt` 头部为 MIT；frontmatter 写 `license: Complete terms in LICENSE.txt`） | **有**：`scripts/update.sh` 本地补丁（190 增 / 40 删，见 DEC-020；`grep -oP`→POSIX `sed -nE`、新增 `update_via_registry()` 回退路径），**不按无差异镜像管理** | 2026-07-29 |
 
 ## 各 Skill 详情
 
@@ -68,15 +68,15 @@
 
 ### `skills/skill-manager`
 
-- **来源类型**：legal-skills 同步。
+- **来源类型**：legal-skills 同步（**fork/派生版**，存在长期本地修改，不按无差异镜像管理）。
 - **上游**：`https://github.com/cat-xierluo/legal-skills`，对应路径 `skills/skill-manager/`。
 - **同步 SHA**：`f801450`（`legal-skills/main` 最新一次触碰 `skills/skill-manager` 的提交：`fix(skill-manager): install.sh 对同路径 skills 去重`，版本 `1.7.0`）。
   - 通过 `git log --oneline legal-skills/main -- skills/skill-manager` 取得。
 - **许可证现状**：MIT。
   - 目录内 `LICENSE.txt` 为 MIT 文本，署名 `杨卫薪律师（微信ywxlaw）`。
   - `SKILL.md` frontmatter 写 `license: Complete terms in LICENSE.txt`（指向同目录 LICENSE.txt，即 MIT）。
-- **本地补丁**：无。`git diff --stat HEAD legal-skills/main -- skills/skill-manager` 输出为空，HEAD 与 upstream 完全一致。
-- **风险与待办**：无紧急项。
+- **本地补丁**：**有**。`scripts/update.sh` 相对 upstream 有实质修改（`git diff legal-skills/main HEAD -- skills/skill-manager`：190 增 / 40 删）。主要改动（DEC-020 记录）：`grep -oP` → POSIX `sed -nE`（修 macOS 兼容）；新增 `update_via_registry()` 回退路径（解决「安装时删 `.git`、更新时依赖 `.git`」的矛盾流程）。本地补丁可回馈 upstream。
+- **风险与待办**：下次同步 upstream 时需三方合并（不能直接 `git checkout` 覆盖，会丢失本地补丁）；同步流程见 `/sync-upstream` 命令与 AGENTS.md 上游同步约定。
 
 ## 跨仓库来源汇总
 
