@@ -19,31 +19,47 @@
    - 若 url 是相对路径，目标文件必须存在（不存在 → **error**）
 
 外部链接（``--check-external``）：
-    当前为占位实现，**不会真正联网**（避免 CI 网络波动阻断提交）。
-    未来接入思路（注释中保留）：
-    - 用 ``urllib.request.urlopen(url, timeout=N)`` HEAD 请求
-    - 失败重试 3 次，指数退避
-    - 维护 ALLOW_LIST（已知限速/反爬域名白名单，跳过）
-    - 作为定时任务跑（如每日 cron），不阻塞本地提交
-    暂时只统计外部链接数量，不做断链判定。
+    仅在显式开启时联网，默认检查仍保持离线。检查器会：
+    - 先发 HEAD；站点拒绝 HEAD 时改用只取首字节的 GET
+    - 对超时、限速和 5xx 做有限重试与指数退避
+    - 读取 ``scripts/external_links_allowlist.txt`` 中的 glob 允许项
+    - 把 404/410 和其他确定性 4xx 判为 error；把访问受限或持续网络异常
+      判为 warn，避免临时网络波动制造假断链
+    - 输出失败 URL、全部来源位置、HTTP 状态或网络原因
 
 符号链接目录不递归（followlinks=False），避免 .claude/skills 与 skills/
 重复扫描。
 
 用法：
     python3 scripts/check_links.py                 # 默认：相对链接 + 锚点 + 引用
-    python3 scripts/check_links.py --check-external # 占位（暂不联网）
+    python3 scripts/check_links.py --check-external
 
 退出码：0 全部有效（允许 warn），1 存在 error 级断链
 """
 
+import argparse
+import fnmatch
 import os
 import re
+import socket
 import sys
+import time
+from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import NamedTuple
+from urllib.error import HTTPError, URLError
+from urllib.parse import urldefrag
+from urllib.request import Request, urlopen
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXCLUDE_DIRS = {".git", ".starter-backups", "output", "__pycache__", "node_modules"}
 EXTERNAL_PREFIXES = ("http://", "https://", "mailto:", "ftp://", "ftps://")
+HTTP_PREFIXES = ("http://", "https://")
+DEFAULT_ALLOWLIST = os.path.join(ROOT, "scripts", "external_links_allowlist.txt")
+RETRYABLE_HTTP_CODES = {408, 425, 429, 500, 502, 503, 504}
+RESTRICTED_HTTP_CODES = {401, 403}
+HEAD_FALLBACK_CODES = {403, 405, 501}
+USER_AGENT = "skill-starter-link-check/1.0"
 
 # 行内链接 [text](target)，target 内部允许 #anchor
 INLINE_LINK_RE = re.compile(r"\[([^\]]*)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
@@ -120,6 +136,156 @@ def collect_headings(content):
 _MD_CACHE = {}
 
 
+class ExternalResult(NamedTuple):
+    """单个外链的检查结果。"""
+
+    status: str
+    detail: str
+    attempts: int
+
+
+def normalize_external_url(url):
+    """移除不会发送给服务器的 fragment，便于去重。"""
+    return urldefrag(url)[0]
+
+
+def load_external_allowlist(path):
+    """读取一行一个 glob 的外链允许清单。"""
+    if not path or not os.path.exists(path):
+        return []
+    patterns = []
+    with open(path, encoding="utf-8") as fh:
+        for raw_line in fh:
+            line = raw_line.strip()
+            if line and not line.startswith("#"):
+                patterns.append(line)
+    return patterns
+
+
+def is_external_allowed(url, patterns):
+    """判断 URL 是否命中允许清单。"""
+    return any(fnmatch.fnmatchcase(url, pattern) for pattern in patterns)
+
+
+def _request_external(url, timeout, method):
+    """执行一次 HTTP 请求，返回状态码；HTTPError 交给调用方分类。"""
+    headers = {
+        "Accept": "text/html,application/xhtml+xml,application/pdf;q=0.9,*/*;q=0.8",
+        "User-Agent": USER_AGENT,
+    }
+    if method == "GET":
+        headers["Range"] = "bytes=0-0"
+    request = Request(url, headers=headers, method=method)
+    with urlopen(request, timeout=timeout) as response:
+        return response.getcode() or 200
+
+
+def _request_external_with_fallback(url, timeout):
+    """优先 HEAD；明确拒绝 HEAD 时改用轻量 GET。"""
+    try:
+        return _request_external(url, timeout, "HEAD")
+    except HTTPError as exc:
+        if exc.code not in HEAD_FALLBACK_CODES:
+            raise
+    return _request_external(url, timeout, "GET")
+
+
+def probe_external_url(url, timeout=10.0, retries=3, backoff=1.0):
+    """核验一个外链，并区分确定断链、访问受限和暂时异常。"""
+    attempts = max(1, retries)
+    last_detail = "未知错误"
+
+    for attempt in range(1, attempts + 1):
+        try:
+            code = _request_external_with_fallback(url, timeout)
+            if 200 <= code < 400:
+                return ExternalResult("ok", f"HTTP {code}", attempt)
+            last_detail = f"HTTP {code}"
+        except HTTPError as exc:
+            code = exc.code
+            last_detail = f"HTTP {code}"
+        except (URLError, TimeoutError, socket.timeout, OSError) as exc:
+            code = None
+            reason = getattr(exc, "reason", exc)
+            last_detail = f"{type(reason).__name__}: {reason}"
+
+        if code in {404, 410}:
+            return ExternalResult("broken", last_detail, attempt)
+        if code in RESTRICTED_HTTP_CODES:
+            return ExternalResult("restricted", last_detail, attempt)
+        if code is not None and 400 <= code < 500 and code not in RETRYABLE_HTTP_CODES:
+            return ExternalResult("broken", last_detail, attempt)
+
+        if attempt < attempts:
+            time.sleep(backoff * (2 ** (attempt - 1)))
+
+    return ExternalResult("transient", last_detail, attempts)
+
+
+def check_external_links(external_sources, allowlist_path, timeout, retries, workers):
+    """并行检查去重后的 HTTP(S) 链接；返回确定断链列表。"""
+    patterns = load_external_allowlist(allowlist_path)
+    allowed = []
+    pending = []
+    for url in sorted(external_sources):
+        if is_external_allowed(url, patterns):
+            allowed.append(url)
+        else:
+            pending.append(url)
+
+    results = {}
+    if pending:
+        with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
+            futures = {
+                pool.submit(probe_external_url, url, timeout, retries): url
+                for url in pending
+            }
+            for future in as_completed(futures):
+                url = futures[future]
+                try:
+                    results[url] = future.result()
+                except Exception as exc:  # 防止单个 worker 异常中断整份报告
+                    results[url] = ExternalResult(
+                        "transient", f"{type(exc).__name__}: {exc}", 1
+                    )
+
+    counts = defaultdict(int)
+    for result in results.values():
+        counts[result.status] += 1
+    counts["allowed"] = len(allowed)
+
+    print(
+        "外链核验："
+        f"{len(external_sources)} 个唯一 URL，"
+        f"{counts['ok']} 正常，{counts['broken']} 确定失效，"
+        f"{counts['restricted']} 访问受限，{counts['transient']} 暂时异常，"
+        f"{counts['allowed']} 允许清单跳过"
+    )
+
+    for url in allowed:
+        print(f"  ⏭️  {url}  命中允许清单")
+        for source in external_sources[url]:
+            print(f"      来源: {source}")
+
+    labels = {
+        "broken": "❌",
+        "restricted": "⚠️ ",
+        "transient": "⚠️ ",
+    }
+    for url in sorted(results):
+        result = results[url]
+        if result.status == "ok":
+            continue
+        print(
+            f"  {labels[result.status]} {url}  {result.detail}"
+            f"（{result.attempts} 次尝试）"
+        )
+        for source in external_sources[url]:
+            print(f"      来源: {source}")
+
+    return [url for url, result in results.items() if result.status == "broken"]
+
+
 def read_md_cache(path):
     """读取并缓存 .md 文件内容（含标题 slug 集合），避免重复 IO。"""
     entry = _MD_CACHE.get(path)
@@ -142,12 +308,18 @@ def resolve_target(md_file, target):
     return resolved
 
 
-def check_inline_link(md_file, target, errors, warns, ext_counter):
+def check_inline_link(
+    md_file, target, errors, warns, ext_counter, external_sources=None, source=None
+):
     """检查单个行内链接 target。"""
     if not target:
         return
     if target.startswith(EXTERNAL_PREFIXES):
         ext_counter[0] += 1
+        if target.startswith(HTTP_PREFIXES) and external_sources is not None:
+            url = normalize_external_url(target)
+            if source not in external_sources[url]:
+                external_sources[url].append(source)
         return
     if target.startswith("#"):
         # 纯当前文件锚点，规则复杂，跳过
@@ -193,14 +365,49 @@ def collect_ref_defs(content):
     return defs
 
 
-def main():
-    check_external = "--check-external" in sys.argv[1:]
+def parse_args(argv):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--check-external",
+        action="store_true",
+        help="联网核验 Markdown 中的 HTTP(S) 链接",
+    )
+    parser.add_argument(
+        "--external-allowlist",
+        default=DEFAULT_ALLOWLIST,
+        help="外链允许清单路径（一行一个 glob）",
+    )
+    parser.add_argument(
+        "--external-timeout",
+        type=float,
+        default=10.0,
+        help="单次请求超时秒数（默认 10）",
+    )
+    parser.add_argument(
+        "--external-retries",
+        type=int,
+        default=3,
+        help="外链最大尝试次数（默认 3）",
+    )
+    parser.add_argument(
+        "--external-workers",
+        type=int,
+        default=8,
+        help="外链并发数（默认 8）",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv=None):
+    args = parse_args([] if argv is None else argv)
+    check_external = args.check_external
 
     errors = []   # list of (md_file, target, reason)
     warns = []
     checked_inline = 0
     checked_refs = 0
     ext_counter = [0]  # 外部链接计数
+    external_sources = defaultdict(list)
 
     for md in iter_md_files():
         try:
@@ -221,7 +428,15 @@ def main():
                     continue
                 checked_inline += 1
                 before = len(errors)
-                check_inline_link(md, target, errors, warns, ext_counter)
+                check_inline_link(
+                    md,
+                    target,
+                    errors,
+                    warns,
+                    ext_counter,
+                    external_sources,
+                    f"{rel_md}:{lineno}",
+                )
                 # 错误信息附加行号
                 if len(errors) > before:
                     e_md, e_t, e_r = errors[-1]
@@ -246,6 +461,11 @@ def main():
                 url = ref_defs[key]
                 if url.startswith(EXTERNAL_PREFIXES):
                     ext_counter[0] += 1
+                    if url.startswith(HTTP_PREFIXES):
+                        normalized = normalize_external_url(url)
+                        source = f"{rel_md}:{lineno}"
+                        if source not in external_sources[normalized]:
+                            external_sources[normalized].append(source)
                     continue
                 # 相对路径：检查文件是否存在
                 resolved = resolve_target(md, url.split("#", 1)[0])
@@ -257,8 +477,23 @@ def main():
 
     print(f"检查了 {checked_inline} 个行内 Markdown 相对链接、"
           f"{checked_refs} 个引用式链接引用")
-    print(f"  外部链接（http/https 等）跳过：{ext_counter[0]} 个"
-          + ("（已开启 --check-external 占位，暂不联网）" if check_external else ""))
+    if check_external:
+        print(
+            f"  发现外部链接 {ext_counter[0]} 处，"
+            f"其中 HTTP(S) 去重后 {len(external_sources)} 个"
+        )
+        external_errors = check_external_links(
+            external_sources,
+            args.external_allowlist,
+            max(0.1, args.external_timeout),
+            max(1, args.external_retries),
+            max(1, args.external_workers),
+        )
+        for url in external_errors:
+            sources = ", ".join(external_sources[url])
+            errors.append((sources, url, "外部链接确定失效"))
+    else:
+        print(f"  外部链接（http/https 等）跳过：{ext_counter[0]} 个")
 
     if warns:
         print(f"⚠️  发现 {len(warns)} 处告警（不阻断提交）：")
@@ -274,4 +509,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

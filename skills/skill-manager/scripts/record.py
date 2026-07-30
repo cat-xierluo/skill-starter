@@ -433,7 +433,9 @@ def record_install(skill_name: str, source: str, skill_path: Path = None, action
     return info
 
 
-def record_update(skill_name: str, old_version: str = None, new_version: str = None):
+def record_update(skill_name: str, old_version: str = None, new_version: str = None,
+                  install_commit: str = None, remote_url: str = None,
+                  install_branch: str = None, remote_subpath: str = None):
     """记录 Skill 更新"""
     registry = load_registry()
     
@@ -442,6 +444,14 @@ def record_update(skill_name: str, old_version: str = None, new_version: str = N
         if new_version:
             registry[skill_name]["current_version"] = new_version
             registry[skill_name]["installed_version"] = old_version or registry[skill_name].get("installed_version")
+        if install_commit:
+            registry[skill_name]["install_commit"] = install_commit
+        if remote_url:
+            registry[skill_name]["remote_url"] = remote_url
+        if install_branch:
+            registry[skill_name]["install_branch"] = install_branch
+        if remote_subpath:
+            registry[skill_name]["remote_subpath"] = remote_subpath
         save_registry(registry)
     
     return registry.get(skill_name)
@@ -760,7 +770,7 @@ def main():
         print("  record.py check-all")
         print("  record.py auto-check [--threshold <days>]")
         print("  record.py list")
-        print("  record.py update <skill_name> [--from <version>] [--to <version>]")
+        print("  record.py update <skill_name> [--from <version>] [--to <version>] [--install-commit <hash>]")
         sys.exit(1)
     
     command = sys.argv[1]
@@ -847,22 +857,42 @@ def main():
                     print(f"   描述: {info['description']}")
     
     elif command == "update":
-        # record.py update <skill_name> [--from <version>] [--to <version>]
+        # record.py update <skill_name> [--from <version>] [--to <version>] [remote metadata]
         skill_name = sys.argv[2] if len(sys.argv) > 2 else None
         old_version = None
         new_version = None
+        install_commit = None
+        remote_url = None
+        install_branch = None
+        remote_subpath = None
         
         for i, arg in enumerate(sys.argv):
             if arg == "--from" and len(sys.argv) > i + 1:
                 old_version = sys.argv[i + 1]
             if arg == "--to" and len(sys.argv) > i + 1:
                 new_version = sys.argv[i + 1]
+            elif arg == "--install-commit" and len(sys.argv) > i + 1:
+                install_commit = sys.argv[i + 1]
+            elif arg == "--remote-url" and len(sys.argv) > i + 1:
+                remote_url = sys.argv[i + 1]
+            elif arg == "--install-branch" and len(sys.argv) > i + 1:
+                install_branch = sys.argv[i + 1]
+            elif arg == "--remote-subpath" and len(sys.argv) > i + 1:
+                remote_subpath = sys.argv[i + 1]
         
         if not skill_name:
             print("❌ 错误: 请提供 skill_name")
             sys.exit(1)
         
-        info = record_update(skill_name, old_version, new_version)
+        info = record_update(
+            skill_name,
+            old_version,
+            new_version,
+            install_commit=install_commit,
+            remote_url=remote_url,
+            install_branch=install_branch,
+            remote_subpath=remote_subpath,
+        )
         if info:
             print(f"✅ 已更新记录: {skill_name}")
             if old_version and new_version:

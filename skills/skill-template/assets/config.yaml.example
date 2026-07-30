@@ -1,3 +1,1 @@
 default_output_dir: ./output
-mode: demo
-max_items: 5

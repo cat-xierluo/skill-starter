@@ -2,7 +2,7 @@
 name: skill-manager
 homepage: https://github.com/cat-xierluo/legal-skills
 author: 杨卫薪律师（微信ywxlaw）
-version: "1.7.0"
+version: "1.8.0"
 description: 管理 Claude Code、Codex、OpenClaw 和 QoderWork Skills 的安装、版本追踪、更新检查和项目 Agent 初始化。支持从本地路径或 GitHub 仓库安装，自动识别 .codex/.claude/.openclaw/.qoderworkcn 目标目录，记录每个 Skill 的安装时间、来源 URL 和版本号，检查 GitHub 更新，并通过 init 命令创建 Agent skills 符号链接结构使多 Agent 共享同一技能来源。
 license: Complete terms in LICENSE.txt
 ---
@@ -77,7 +77,7 @@ skill-manager install jgtolentino/insightpulse-odoo/main/docs/claude-code-skills
 5. **本地来源** - 创建符号链接，保持与源同步更新
 6. **GitHub 仓库根** - 使用 `git clone --depth 1` 浅克隆
 7. **GitHub 子目录** - 使用稀疏克隆（sparse checkout）仅获取指定目录
-8. **冲突处理** - 已存在时先备份为 `.backup`，然后安装新版本
+8. **冲突处理** - 安装时保留 `.backup`；更新时先在同文件系统暂存并校验，再切换目录，旧版本保留为带时间戳的 `.backup.*`
 
 #### 安装命令
 
@@ -309,7 +309,7 @@ python3 scripts/record.py list
 | `latest_version` | 远程最新版本 |
 | `install_commit` | 安装时的 Git commit hash（仅远程） |
 | `install_branch` | 安装时使用的 Git branch（仅远程） |
-| `remote_url` | 完整 GitHub URL，含子目录路径（仅远程） |
+| `remote_url` | 可克隆的 GitHub 仓库 URL，不含 `/tree/...` 子目录（仅远程） |
 | `remote_subpath` | Skill 在仓库中的子路径（仅子目录安装） |
 | `description` | Skill 描述 |
 | `homepage` | 主页 URL |

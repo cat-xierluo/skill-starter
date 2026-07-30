@@ -19,20 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-# 第三方内容声明
-
-本仓库为混合内容仓库。本 MIT 许可证仅覆盖本仓库的**原创内容**（教程文档、
-scripts/、skills/skill-template/、协作文档等）。
-
-仓库内以下目录为第三方或上游内容，**保留其原始许可证**，不被本根 LICENSE 覆盖：
-
-- `skills/git-batch-commit/` — 来自 legal-skills 上游，MIT（见其目录 LICENSE 声明）
-- `skills/skill-manager/` — 来自 legal-skills 上游，MIT（见其目录 LICENSE.txt）
-- `skills/skill-creator/` — 来自 anthropics/skills，Apache-2.0（见其目录 LICENSE.txt）
-- `skills/find-skills/` — 来自 vercel-labs/skills，MIT（见其目录 LICENSE.txt）
-
-各 Skill 的来源、同步 commit SHA、许可证与本地补丁的权威记录见
-`docs/SOURCE-INDEX.md`；仓库级许可证方案讨论见 `docs/LICENSE-PLAN.md`。

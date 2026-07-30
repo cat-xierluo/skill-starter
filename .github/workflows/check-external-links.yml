@@ -1,0 +1,33 @@
+name: check-external-links
+
+# 外链受站点限速、反爬和临时网络波动影响，不放进普通 push / PR 门禁。
+# 每周定时运行，也可在 Actions 中手动触发；确定性 4xx 才会让任务失败。
+on:
+  schedule:
+    - cron: '23 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  external-links:
+    name: 核验 Markdown 外部链接
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 核验外部链接
+        run: >-
+          python3 scripts/check_links.py
+          --check-external
+          --external-timeout 10
+          --external-retries 3
+          --external-workers 8

@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """检查 skills/ 下每个 Skill 的结构完整性（标准 YAML 版）。
 
-YAML 解析模式（自动二选一）：
+YAML 解析模式：
 - 优先模式：若环境可用 PyYAML，则用 ``yaml.safe_load`` 解析 frontmatter，
   字段类型、引号、多行（``|`` / ``>``）等完全遵循 YAML 1.1/1.2 规范。
 - 兜底模式：若 PyYAML 未安装，使用本文件内置的极简 frontmatter 解析器
   （支持顶层 ``key: value``、单/双引号字符串、``|`` / ``|``- / ``>`` / ``>-``
   块字面量），覆盖现有 skill 全部写法。
 
-PyYAML 不是硬依赖：未安装时脚本仍可运行，只是解析能力略弱。
+普通本地检查允许在 PyYAML 缺失时使用 fallback；设置
+``STRICT_SKILL_YAML=1`` 后，PyYAML 缺失或 YAML 语法错误都会失败。只要
+PyYAML 已安装，其解析错误就不会再被 fallback 掩盖。
 
 校验规则：
 - error（必需项缺失 → 退出码 1）
@@ -40,6 +42,11 @@ RECOMMENDED_FILES = ("CHANGELOG.md", "LICENSE.txt")
 NAME_VALID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 NAME_MAX_LEN = 64
 DESCRIPTION_MIN_LEN = 10
+STRICT_YAML_ENV = "STRICT_SKILL_YAML"
+
+
+class FrontmatterParseError(ValueError):
+    """frontmatter 不能按所声明的 YAML 模式可靠解析。"""
 
 
 def _try_import_yaml():
@@ -150,11 +157,12 @@ def fallback_parse(fm_text):
     return result
 
 
-def parse_frontmatter(content):
+def parse_frontmatter(content, strict=False):
     """解析 frontmatter，返回 ``dict``。
 
     PyYAML 可用时返回其解析结果（值可能是 str/int/dict/list 等）；
-    不可用时返回 fallback 字符串字典。失败时返回空字典。
+    不可用时，非严格模式返回 fallback 字符串字典。PyYAML 已安装但解析
+    失败时直接抛出 ``FrontmatterParseError``，避免非法 YAML 假绿。
     """
     fm_text, has_fm = extract_frontmatter_text(content)
     if not has_fm:
@@ -166,11 +174,11 @@ def parse_frontmatter(content):
                 return data
             return {}
         except Exception as e:
-            # PyYAML 解析失败时，退到 fallback（仍可能拿到关键字段）
-            sys.stderr.write(
-                f"  [note] PyYAML 解析失败，回退到 fallback 解析: {e}\n"
-            )
-            return fallback_parse(fm_text)
+            raise FrontmatterParseError(f"YAML 语法错误: {e}") from e
+    if strict:
+        raise FrontmatterParseError(
+            f"严格模式需要 PyYAML；请安装 requirements-check.txt"
+        )
     return fallback_parse(fm_text)
 
 
@@ -199,7 +207,14 @@ def main():
         print("❌ skills/ 目录不存在")
         sys.exit(1)
 
-    mode = "PyYAML safe_load" if YAML_LIB is not None else "fallback（PyYAML 未安装）"
+    strict_yaml = os.environ.get(STRICT_YAML_ENV, "0") == "1"
+    if strict_yaml and YAML_LIB is None:
+        print("❌ 严格 YAML 校验需要 PyYAML，请安装 requirements-check.txt")
+        sys.exit(1)
+
+    mode = "PyYAML safe_load" if YAML_LIB is not None else "fallback（PyYAML 未安装，非严格）"
+    if strict_yaml:
+        mode += " + strict"
     print(f"YAML 解析模式：{mode}")
 
     skills = sorted(
@@ -221,7 +236,11 @@ def main():
             errors.append(f"skills/{name}/SKILL.md 读取失败")
             continue
 
-        fm = parse_frontmatter(content)
+        try:
+            fm = parse_frontmatter(content, strict=strict_yaml)
+        except FrontmatterParseError as exc:
+            errors.append(f"skills/{name}/SKILL.md {exc}")
+            continue
 
         # === error 规则：name / description 必须存在且非空 ===
         name_val = field_to_str(fm.get("name"))

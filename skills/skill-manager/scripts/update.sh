@@ -58,13 +58,26 @@ record_update() {
     local skill_name="$1"
     local old_version="$2"
     local new_version="$3"
+    local install_commit="${4:-}"
+    local remote_url="${5:-}"
+    local install_branch="${6:-}"
+    local remote_subpath="${7:-}"
 
     if command -v python3 &> /dev/null; then
         RECORD_SCRIPT="$SCRIPT_DIR/record.py"
         if [ -f "$RECORD_SCRIPT" ]; then
-            python3 "$RECORD_SCRIPT" update "$skill_name" --from "$old_version" --to "$new_version" 2>/dev/null || true
+            local args=(update "$skill_name" --from "$old_version" --to "$new_version")
+            [ -n "$install_commit" ] && args+=(--install-commit "$install_commit")
+            [ -n "$remote_url" ] && args+=(--remote-url "$remote_url")
+            [ -n "$install_branch" ] && args+=(--install-branch "$install_branch")
+            [ -n "$remote_subpath" ] && args+=(--remote-subpath "$remote_subpath")
+            if ! python3 "$RECORD_SCRIPT" "${args[@]}" >/dev/null 2>&1; then
+                echo "  ⚠️  Skill 已更新，但注册表写入失败"
+                return 1
+            fi
         fi
     fi
+    return 0
 }
 
 if [ -f "$TARGET_HELPER" ]; then
@@ -109,12 +122,21 @@ update_via_git() {
     remote_rev=$(git rev-parse '@{u}' 2>/dev/null)
 
     if [ "$local_rev" != "$remote_rev" ] && [ -n "$remote_rev" ]; then
-        git pull -q
+        if ! git pull -q; then
+            echo "  ❌ 拉取更新失败（git pull）"
+            cd "$ORIGINAL_PWD" >/dev/null 2>&1 || true
+            echo ""
+            return 1
+        fi
 
         local new_version
         new_version=$(read_skill_version "$skill_path/SKILL.md")
         echo "  ✓ 已更新 ($old_version → $new_version)"
-        record_update "$skill_name" "$old_version" "$new_version"
+        if ! record_update "$skill_name" "$old_version" "$new_version" "$remote_rev"; then
+            cd "$ORIGINAL_PWD" >/dev/null 2>&1 || true
+            echo ""
+            return 1
+        fi
     else
         echo "  ○ 已是最新"
     fi
@@ -131,12 +153,33 @@ update_via_registry() {
     local skill_name
     skill_name=$(basename "$skill_path")
 
-    local remote_url branch subpath
+    local remote_url branch recorded_branch subpath installed_commit
     remote_url=$(get_meta_field "$skill_name" "remote_url")
     [ -z "$remote_url" ] && remote_url=$(get_meta_field "$skill_name" "source")
     branch=$(get_meta_field "$skill_name" "install_branch")
+    recorded_branch="$branch"
     [ -z "$branch" ] && branch="main"
     subpath=$(get_meta_field "$skill_name" "remote_subpath")
+    installed_commit=$(get_meta_field "$skill_name" "install_commit")
+
+    # 兼容 1.5.0 旧注册表：当 remote_url 错误保存为 GitHub /tree/ 或 /blob/
+    # 网页地址时，拆回可克隆仓库 URL + branch + subpath。新安装不会再写入这种格式。
+    if [[ "$remote_url" =~ ^(https?://github\.com/[^/]+/[^/]+)(\.git)?/(tree|blob)/(.+)$ ]]; then
+        local legacy_tail legacy_branch legacy_subpath
+        legacy_tail="${BASH_REMATCH[4]}"
+        remote_url="${BASH_REMATCH[1]}"
+        if [ -n "$recorded_branch" ] && [[ "$legacy_tail" == "$recorded_branch/"* ]]; then
+            # 已记录的 branch 可以消除 feature/name/path 中 ref 与 subpath 的歧义。
+            legacy_branch="$recorded_branch"
+            legacy_subpath="${legacy_tail#"$recorded_branch/"}"
+        else
+            legacy_branch="${legacy_tail%%/*}"
+            legacy_subpath="${legacy_tail#*/}"
+        fi
+        [ -z "$recorded_branch" ] && branch="$legacy_branch"
+        [ -z "$subpath" ] && subpath="$legacy_subpath"
+        echo "  ℹ 已兼容迁移旧式 GitHub 子目录来源记录"
+    fi
 
     if [ -z "$remote_url" ]; then
         echo "⚠ 跳过: $skill_name 既无 .git 也无远程来源记录（无法更新）"
@@ -150,62 +193,120 @@ update_via_registry() {
     [ -n "$subpath" ] && echo "  子路径: $subpath"
     echo "  分支: $branch"
 
-    local tmp_dir clone_name
-    tmp_dir=$(mktemp -d)
-    clone_name="$skill_name"
+    local tmp_dir clone_dir source_dir candidate_dir remote_commit
+    if ! tmp_dir=$(mktemp -d); then
+        echo "  ❌ 无法创建临时目录"
+        echo ""
+        return 1
+    fi
+    clone_dir="$tmp_dir/repository"
+    candidate_dir="$tmp_dir/candidate"
 
-    # 与 install.sh 一致的克隆策略：有 subpath 用 sparse checkout，否则整仓克隆
+    # 与 install.sh 一致：子目录使用 sparse checkout，整仓直接浅克隆。
     if [ -n "$subpath" ]; then
-        cd "$tmp_dir" || { rm -rf "$tmp_dir"; return 1; }
-        git init -q
-        git remote add origin "$remote_url"
-        git config core.sparseCheckout true
-        echo "$subpath" > .git/info/sparse-checkout
-        if ! git fetch --depth 1 origin "$branch" -q 2>/dev/null; then
+        mkdir -p "$clone_dir"
+        if ! (
+            cd "$clone_dir" &&
+            git init -q &&
+            git remote add origin "$remote_url" &&
+            git config core.sparseCheckout true &&
+            printf '%s\n' "$subpath" > .git/info/sparse-checkout &&
+            git fetch --depth 1 origin "$branch" -q 2>/dev/null &&
+            git checkout --detach FETCH_HEAD -q
+        ); then
             echo "  ❌ 无法获取更新（git fetch 失败）"
-            cd - > /dev/null || return 1
             rm -rf "$tmp_dir"
             echo ""
             return 1
         fi
-        git checkout "$branch" -q
-        if [ "$tmp_dir/$subpath" != "$tmp_dir/$clone_name" ]; then
-            mv "$tmp_dir/$subpath" "$tmp_dir/$clone_name"
-        fi
-        cd - > /dev/null || return 0
+        source_dir="$clone_dir/$subpath"
     else
-        if ! git clone --depth 1 -q -b "$branch" "$remote_url" "$tmp_dir/$clone_name" 2>/dev/null; then
+        if ! git clone --depth 1 -q -b "$branch" "$remote_url" "$clone_dir" 2>/dev/null; then
             echo "  ❌ 无法获取更新（git clone 失败）"
             rm -rf "$tmp_dir"
             echo ""
             return 1
         fi
+        source_dir="$clone_dir"
     fi
 
-    # 版本号相同 → 视为已是最新；不同或缺失 → 覆盖更新
+    remote_commit=$(git -C "$clone_dir" rev-parse HEAD 2>/dev/null || true)
+    if [ ! -d "$source_dir" ] || { [ ! -f "$source_dir/SKILL.md" ] && [ ! -f "$source_dir/skill.md" ]; }; then
+        echo "  ❌ 远程来源中找不到有效 Skill: ${subpath:-仓库根目录}"
+        rm -rf "$tmp_dir"
+        echo ""
+        return 1
+    fi
+    if ! cp -R "$source_dir" "$candidate_dir"; then
+        echo "  ❌ 无法准备候选版本（复制失败）"
+        rm -rf "$tmp_dir"
+        echo ""
+        return 1
+    fi
+    rm -rf "$candidate_dir/.git"
+
     local old_version new_version
     old_version=$(read_skill_version "$skill_path/SKILL.md")
-    new_version=$(read_skill_version "$tmp_dir/$clone_name/SKILL.md")
+    new_version=$(read_skill_version "$candidate_dir/SKILL.md")
 
-    if [ -n "$old_version" ] && [ -n "$new_version" ] && [ "$old_version" = "$new_version" ]; then
-        echo "  ○ 已是最新 (v$new_version)"
+    # commit 相同并不足以证明本地目录没被改动，因此最终以目录内容为准。
+    # 这也覆盖“版本号未提升但上游内容已变化”的场景。
+    if diff -qr "$skill_path" "$candidate_dir" >/dev/null 2>&1; then
+        if [ -n "$remote_commit" ] && [ "$installed_commit" != "$remote_commit" ]; then
+            if ! record_update "$skill_name" "$old_version" "$new_version" "$remote_commit" "$remote_url" "$branch" "$subpath"; then
+                rm -rf "$tmp_dir"
+                echo ""
+                return 1
+            fi
+            echo "  ○ 内容已是最新，已刷新 commit 记录"
+        else
+            echo "  ○ 已是最新${new_version:+ (v$new_version)}"
+        fi
         rm -rf "$tmp_dir"
         echo ""
         return 0
     fi
 
-    # 备份旧目录、覆盖为新版本；与 install.sh 保持一致：安装后不带 .git
-    rm -rf "$tmp_dir/$clone_name/.git"
-    if [ -d "$skill_path" ]; then
-        rm -rf "${skill_path}.backup"
-        mv "$skill_path" "${skill_path}.backup"
-        echo "  (旧版本已备份至 ${skill_path}.backup)"
+    # 先把完整候选版本复制到目标同一文件系统，再切换目录；任何准备失败都不触碰旧 Skill。
+    local stage_root stage_skill backup_path
+    if ! stage_root=$(mktemp -d "${skill_path}.update.XXXXXX"); then
+        echo "  ❌ 无法在目标目录旁创建更新暂存区"
+        rm -rf "$tmp_dir"
+        echo ""
+        return 1
     fi
-    cp -R "$tmp_dir/$clone_name" "$skill_path"
-    rm -rf "$tmp_dir"
+    stage_skill="$stage_root/$skill_name"
+    if ! cp -R "$candidate_dir" "$stage_skill"; then
+        echo "  ❌ 无法写入更新暂存区；原 Skill 未改变"
+        rm -rf "$stage_root" "$tmp_dir"
+        echo ""
+        return 1
+    fi
+
+    backup_path="${skill_path}.backup.$(date +%Y%m%d%H%M%S).$$"
+    if ! mv "$skill_path" "$backup_path"; then
+        echo "  ❌ 无法备份当前 Skill；更新已取消"
+        rm -rf "$stage_root" "$tmp_dir"
+        echo ""
+        return 1
+    fi
+    if ! mv "$stage_skill" "$skill_path"; then
+        echo "  ❌ 无法启用候选版本，正在恢复原 Skill"
+        mv "$backup_path" "$skill_path" 2>/dev/null || {
+            echo "  ❌ 自动恢复失败，原版本保留在: $backup_path"
+        }
+        rm -rf "$stage_root" "$tmp_dir"
+        echo ""
+        return 1
+    fi
+    rm -rf "$stage_root" "$tmp_dir"
 
     echo "  ✓ 已更新 ($old_version → $new_version)"
-    record_update "$skill_name" "$old_version" "$new_version"
+    echo "  (旧版本已备份至 $backup_path)"
+    if ! record_update "$skill_name" "$old_version" "$new_version" "$remote_commit" "$remote_url" "$branch" "$subpath"; then
+        echo ""
+        return 1
+    fi
     echo ""
     return 0
 }
@@ -239,19 +340,28 @@ if [ -z "$ITEM_NAME" ]; then
     echo ""
 
     count=0
+    success_count=0
+    fail_count=0
     for item in "$SKILLS_DIR"/*; do
         [ -e "$item" ] || continue   # 空目录通配保护
         [ -L "$item" ] && continue   # 符号链接跳过
         if [ -d "$item" ]; then
-            update_skill "$item"
             count=$((count + 1))
+            if update_skill "$item"; then
+                success_count=$((success_count + 1))
+            else
+                fail_count=$((fail_count + 1))
+            fi
         fi
     done
 
     if [ "$count" -eq 0 ]; then
         echo "没有需要更新的 skills"
     else
-        echo "✓ 更新完成，共检查 $count 个 skills"
+        echo "更新检查完成：成功 ${success_count}，失败 ${fail_count}，共 ${count} 个 skills"
+    fi
+    if [ "$fail_count" -gt 0 ]; then
+        exit 1
     fi
 else
     # 更新指定 skill
@@ -273,6 +383,10 @@ else
         exit 1
     fi
 
-    update_skill "$TARGET_PATH"
-    echo "✓ 更新完成"
+    if update_skill "$TARGET_PATH"; then
+        echo "✓ 更新检查完成"
+    else
+        echo "❌ 更新失败: $ITEM_NAME"
+        exit 1
+    fi
 fi

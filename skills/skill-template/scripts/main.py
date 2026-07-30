@@ -16,9 +16,42 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--task", required=True, help="Describe the task this skill should handle.")
     parser.add_argument(
         "--output-dir",
-        help="Optional output directory. Defaults to OUTPUT_DIR env var or ./output.",
+        help="Override output directory. Priority: CLI, OUTPUT_DIR, config, ./output.",
+    )
+    parser.add_argument(
+        "--config",
+        help="Optional config path. Defaults to assets/config.yaml.example.",
     )
     return parser.parse_args()
+
+
+def load_simple_config(path: Path) -> dict[str, str]:
+    """读取模板使用的顶层 ``key: value`` 配置，不引入第三方依赖。"""
+    if not path.is_file():
+        return {}
+    result: dict[str, str] = {}
+    for raw_line in path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        result[key.strip()] = value.strip().strip("\"'")
+    return result
+
+
+def resolve_output_dir(args: argparse.Namespace, skill_root: Path) -> Path:
+    config_path = (
+        Path(args.config)
+        if args.config
+        else skill_root / "assets" / "config.yaml.example"
+    )
+    config = load_simple_config(config_path)
+    configured_dir = config.get("default_output_dir")
+    selected = args.output_dir or os.getenv("OUTPUT_DIR") or configured_dir or "./output"
+    output_dir = Path(selected).expanduser()
+    if not output_dir.is_absolute():
+        output_dir = skill_root / output_dir
+    return output_dir
 
 
 def build_output(task: str) -> str:
@@ -42,7 +75,7 @@ def build_output(task: str) -> str:
 def main() -> int:
     args = parse_args()
     skill_root = Path(__file__).resolve().parents[1]
-    output_dir = Path(args.output_dir or os.getenv("OUTPUT_DIR") or (skill_root / "output"))
+    output_dir = resolve_output_dir(args, skill_root)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     output_path = output_dir / "result.md"

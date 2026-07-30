@@ -13,6 +13,7 @@
     "install_commit": null,
     "install_branch": null,
     "remote_url": null,
+    "remote_subpath": null,
     "description": "示例本地安装的 Skill"
   },
   "example-remote-skill": {
@@ -28,6 +29,7 @@
     "install_commit": "a1b2c3d",
     "install_branch": "main",
     "remote_url": "https://github.com/owner/skill-repo",
+    "remote_subpath": null,
     "description": "示例 GitHub 安装的 Skill"
   }
 }

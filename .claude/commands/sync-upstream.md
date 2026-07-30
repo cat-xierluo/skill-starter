@@ -1,154 +1,244 @@
 # Sync Skills from Upstream
 
-把仓库根目录 `skills/` 下的某些 skill 与一个上游只读 remote 同步最新内容,支持两种模式:
+从只读上游 remote 精确同步 `skills/<name>`。支持新增、无本地补丁镜像更新和带本地补丁派生版合并；默认保留无关工作树改动，不允许整棵 `skills/` 覆盖。
 
-- **同步已有 skill**:本地已经有同名 skill,upstream 有更新,覆盖式拉取最新版。
-- **拉取新 skill**:本地没有,upstream 有,把它新增到本地仓库。
+## 适用请求
 
-典型场景:从 `cat-xierluo/legal-skills` 同步 `git-batch-commit`、`skill-manager` 等通用 skill,或从中拉取 `subtree-publish`、`cross-agent-coordination` 等新 skill。
+- “从 legal-skills 同步最新的 git-batch-commit”
+- “检查 skill-manager 上游变化并保留 starter 补丁”
+- “从某个上游拉一个新 Skill”
+- “跨仓库拉一批 Skill 子目录”
 
-## 触发场景
+## 不变量
 
-- "从 legal-skills 同步最新的 git-batch-commit"
-- "帮我 cherry-pick 这几个 skill"
-- "把 legal-skills 的 skill-manager 拉过来"
-- "从 legal-skills 拉一个新 skill:subtree-publish"
-- "跨仓库拉一批文件过来"
+1. remote 只用于 fetch；必须显式设置不可用的 push URL，并在同步前验证。
+2. 只操作用户点名且上游真实存在的 `skills/<name>`；禁止 checkout 整个 `skills/`。
+3. 目标目录有未提交改动时停止，不用备份掩盖脏工作树。
+4. 备份路径同时包含 UTC 时间和 upstream short SHA，且有清单文件；不得复用旧备份目录。
+5. 无本地补丁的镜像才可整目录 checkout；fork/派生版只能导出候选后定向合并。
+6. 同步后检查 Skill 自身、目录外依赖、许可证、来源记录和全仓严格检查。
+7. 任一步失败都保留候选与备份，先恢复再报告；不删除无关文件。
+
+本仓库的特殊边界：
+
+- `skills/git-batch-commit` 当前是 legal-skills 镜像，可在预检仍确认无本地补丁时覆盖同步。
+- `skills/skill-manager` 是带 DEC-020、DEC-034 本地补丁的派生版，**禁止**执行 `git checkout legal-skills/main -- skills/skill-manager`；只能走“派生版合并”。
+- `04-创建Skill/SKILL-*-GUIDE.md` 不属于本命令默认范围。
+- 根 `AGENTS.md` 已有同步规则时只读取，不为留痕重复改写；用户明确要求改变项目规则时才修改。
 
 ## 执行流程
 
-按顺序执行,任何一步出问题先停下来问用户,不要擅自跳步。
+按顺序执行。输入、来源分类或目标路径不明确时停止，不从标题猜测。
 
-### 1. 确认 upstream remote
+### 1. 固定输入并校验路径
 
-- 如果已经存在 `<remote-name>` 指向目标 upstream,跳过。
-- 否则:
-  ```bash
-  git remote add <remote-name> <upstream-url>
-  git fetch <remote-name> <default-branch>
-  ```
-- **坑**:upstream 默认分支可能是 `main` 而不是 `master`。先用 `git remote show <remote-name>` 或 `git ls-remote --symref <remote-name> HEAD` 确认,不要假设。
+先明确：
 
-### 2. 核实 upstream 实际有什么 + 拆分两种模式
+- `REMOTE`：remote 名称
+- `UPSTREAM_URL`：上游 Git URL
+- `BRANCH`：默认分支
+- `SKILLS`：一个或多个 Skill 名称
 
-**这一步不能跳过**。盲目拉取会把整个 `skills/` 目录连同符号链接一起拉过来。
+remote 和 Skill 名只允许字母、数字、点、下划线、连字符。拒绝空值、`..`、斜杠、绝对路径和 glob，防止目标越出 `skills/<name>`。
 
-```bash
-git ls-tree -d --name-only <remote-name>/<default-branch> skills/
-```
+先读 `docs/SOURCE-INDEX.md` 和 `AGENTS.md` 的上游同步段，把每个目标标成：
 
-向用户列出 upstream 实际有的 skill,把请求拆成两组:
-
-- **已有同步组**:本地 `skills/<name>` 存在,且 upstream 也有 → 走第 3 步"备份"和第 4 步"覆盖拉取"。
-- **新拉取组**:本地 `skills/<name>` 不存在,但 upstream 有 → 跳过第 3 步"备份",直接走第 4b 步"新增拉取"。
-
-如果用户请求的 skill 在 upstream 中**根本不存在**,停下来告知用户,可能是上游重命名 / 删除 / 用户记错名字。
-
-### 3. 备份本地版本
-
-把每个本地同名 skill 复制到仓库根的 `.starter-backups/<name>/`(或 `<backup-dir>/<name>/`,**不要放在 `skills/` 内**)。
-
-```bash
-mkdir -p .starter-backups
-for skill in <list-of-local-skills-to-backup>; do
-  cp -R "skills/$skill" ".starter-backups/$skill"
-done
-```
-
-**坑**:`.gitignore` 里加上 `<backup-dir>/` 防止备份目录被 commit。备份目录**必须**放在 Claude Code 扫描 `SKILL.md` 的范围之外,否则 Claude 会把备份目录里的旧 `SKILL.md` 当作可用 skill 加载,污染触发词。
-
-### 4. 精确拉取
-
-```bash
-git checkout <remote-name>/<default-branch> -- skills/<skill-a> skills/<skill-b> ...
-```
-
-只列要同步的子目录,不要写整个 `skills/`。`git checkout <ref> -- <paths>` 是跨仓库取子树的正确方式;真正的 `git cherry-pick` 不能用,因为独立仓库没有 common ancestor。
-
-等价写法:
-
-| 命令 | 效果 |
-|---|---|
-| `git checkout <ref> -- <paths>` | 覆盖 index + 工作区 |
-| `git read-tree <ref> -- <paths>` | 只更新 index |
-| `git restore --source=<ref> <paths>` | 只恢复工作区 |
-
-### 4b. 新增拉取(新 skill 模式)
-
-只对**新拉取组**生效,已有同步组跳过本节。
-
-```bash
-# 拉取
-git checkout <remote-name>/<default-branch> -- skills/<new-skill>
-
-# 验证 SKILL.md 完整
-head -20 skills/<new-skill>/SKILL.md
-
-# 看目录结构
-find skills/<new-skill> -maxdepth 2 -type f
-```
-
-检查点:
-
-- `SKILL.md` 的 frontmatter 有 `name` 和 `description`
-- 目录结构合理(`scripts/`、`references/`、`assets/` 至少有一个或可为空)
-- 文件**不是符号链接**(如果是符号链接,说明 upstream 用了本地路径别名,**不要拉**,告知用户)
-
-### 5. 检查意外副作用
-
-```bash
-git status
-```
-
-重点关注三类异常:
-
-- **意外的 `D` 状态**:HEAD 跟踪但工作目录缺失的文件(可能是 commit message 与实际改动不符,或本地 hook 副作用)。用 `git checkout HEAD -- <paths>` 从 HEAD 恢复。
-- **意外的 `??` 文件**:不在备份里、也不在 upstream 里的游离文件,通常是临时工具产物。**先看内容再决定**,简单的占位文件可以直接 `rm`。
-- **`UU`/`AA`/`DD` 冲突标记**:几乎不会出现(因为是覆盖式拉取),出现说明 HEAD 与 upstream 都有改动,需要手动解决。
-
-新拉取组还会出现 `A skills/<new-skill>/...` 状态,这正是预期的新增文件。
-
-### 6. 登记同步约定 + 新 skill 入库(必做)
-
-在 `AGENTS.md` 的"上游同步文件"约定里追加本次同步的 skill 列表,明确:
-
-- 哪个 remote / branch 是来源
-- 同步命令
-- 哪些 skill 是同步自 upstream,哪些是仓库原创
-
-**对新拉取组额外要做**:
-
-- 把新 skill 加进 `README.md` 项目结构小节,标注"同步自 <upstream>"
-- 如果新 skill 有 `LICENSE.txt`,确认 `SKILL.md` 的 `license` 字段与之一致
-- 在 `CHANGELOG.md` 新增一个 `0.x.0` 段落记录此次拉取
-
-### 7. 报告
-
-向用户总结:
-
-- 同步了哪些 skill,版本号变化
-- 备份位置和恢复命令(`mv .starter-backups/<name> skills/<name>`)
-- 任何意外副作用及处理方式
-
-## 备份恢复命令
-
-```bash
-# 完整恢复某个 skill
-rm -rf skills/<name>
-mv .starter-backups/<name> skills/<name>
-
-# 仅恢复某个文件
-cp .starter-backups/<name>/<path> skills/<name>/<path>
-```
-
-备份目录**不保证**包含 `CLAUDE.md` 等嵌套文件(它们可能在备份前就已从工作目录缺失),恢复时如果 `git status` 还显示 `D`,用 `git checkout HEAD -- <path>` 兜底。
-
-## 已知坑点速查
-
-| 坑 | 现象 | 解法 |
+| 类型 | 判定 | 后续路径 |
 |---|---|---|
-| 默认分支不是 master | `git fetch <remote> master` 报 "couldn't find remote ref" | `git remote show <remote>` 先查 |
-| 拉整个 `skills/` | 把 50+ skill + 符号链接全拉过来 | `git ls-tree` 核实后再写路径 |
-| 备份放在 `skills/` 内 | 备份的旧 SKILL.md 被 Claude 误识别 | 备份放到 `.starter-backups/` 等扫描范围外 |
-| 嵌套 CLAUDE.md 突然 `D` | commit message 与实际改动不符,HEAD 仍跟踪 | `git checkout HEAD -- <path>` 恢复 |
-| 真正的 `cherry-pick` 失败 | 独立仓库没有 common ancestor | 改用 `git checkout <ref> -- <paths>` |
+| 新增 | 本地不存在，上游存在 | 新增拉取 |
+| 镜像 | 本地存在，来源索引确认无本地补丁 | 覆盖同步 |
+| 派生版 | 来源索引记录 fork、本地补丁或独立版本 | 候选导出 + 定向合并 |
+
+来源索引缺失或与实际 diff 冲突时按“派生版”处理，不能按镜像覆盖。
+
+### 2. 确认 remote 并锁死 push
+
+如果 remote 不存在才添加；如果存在，先比较 URL，不一致就停止：
+
+```bash
+git remote get-url <remote-name>
+git remote add <remote-name> <upstream-url>  # 仅 remote 不存在时
+```
+
+无论 remote 是否新建，都设置并核对不可用的 push URL：
+
+```bash
+git remote set-url --push <remote-name> DISABLED
+git remote get-url --push <remote-name>
+```
+
+输出必须精确为 `DISABLED`。不要用“团队约定不推送”替代这道技术保护。
+
+确认默认分支，不假设是 `main`：
+
+```bash
+git ls-remote --symref <remote-name> HEAD
+git fetch --prune <remote-name> <default-branch>
+git rev-parse --verify <remote-name>/<default-branch>^{commit}
+```
+
+### 3. 核实上游子树、SHA 和目录外依赖
+
+对每个目标逐一运行：
+
+```bash
+git cat-file -e <remote>/<branch>:skills/<name>/SKILL.md
+git ls-tree -r --name-only <remote>/<branch> -- skills/<name>
+git show <remote>/<branch>:skills/<name>/SKILL.md | sed -n '1,40p'
+```
+
+不存在 `SKILL.md`、目录为空或发现目录本身是符号链接时停止。
+
+预检目录外依赖：
+
+```bash
+git grep -nE '\]\((\.\./|/)' <remote>/<branch> -- 'skills/<name>/*.md'
+git ls-tree -r --name-only <remote>/<branch> -- LICENSE LICENSE.txt NOTICE requirements.txt pyproject.toml package.json
+```
+
+逐项判断 `SKILL.md`/references/scripts 是否引用：
+
+- 上游仓库根许可证或 NOTICE；
+- 根级依赖清单、共享脚本或目录外相对链接；
+- 未包含在目标子树里的模板、assets 或测试夹具。
+
+不得只拉 `SKILL.md` 后假定依赖完整。需要附带文件时，先向用户列出并扩大**精确路径清单**；不能用整个仓库兜底。
+
+### 4. 脏工作树门槛与差异预览
+
+目标路径必须干净：
+
+```bash
+git status --short --untracked-files=all -- skills/<name>
+git diff -- skills/<name>
+git diff --cached -- skills/<name>
+```
+
+任一输出非空就停止，说明是未提交修改、暂存修改还是未跟踪文件。无关路径可以保持原状，但同步前后都要保存 `git status --short` 快照，用于识别意外副作用。
+
+对本地已有目标展示差异：
+
+```bash
+git diff --stat HEAD <remote>/<branch> -- skills/<name>
+git diff HEAD <remote>/<branch> -- skills/<name>
+```
+
+如果来源索引称“镜像”，实际却出现 starter 独有逻辑、测试或版本号，升级为“派生版”处理。
+
+### 5. 创建不可冲突的时间/SHA 备份
+
+先解析确定的 upstream commit：
+
+```bash
+UPSTREAM_SHA=$(git rev-parse <remote>/<branch>^{commit})
+SHORT_SHA=$(git rev-parse --short=12 <remote>/<branch>^{commit})
+STAMP=$(date -u +%Y%m%dT%H%M%SZ)
+BACKUP_ROOT=".starter-backups/${STAMP}-${SHORT_SHA}"
+mkdir -p "$BACKUP_ROOT"
+```
+
+每个本地已有目标使用 `cp -a`，保留隐藏文件、权限和符号链接属性：
+
+```bash
+cp -a "skills/<name>" "$BACKUP_ROOT/<name>"
+```
+
+写入 `$BACKUP_ROOT/MANIFEST.txt`，至少记录：UTC 时间、remote、fetch URL、branch、完整 upstream SHA、本地 `HEAD` SHA、目标列表和每个目标的来源类型。确认 `.gitignore` 已精确忽略 `.starter-backups/`。
+
+新 Skill 没有本地目录，不伪造内容备份，但仍写 manifest，以便审计新增来源。
+
+### 6A. 新增或镜像：精确 checkout
+
+只有“新增”和再次确认无本地补丁的“镜像”可以执行：
+
+```bash
+git checkout <remote>/<branch> -- skills/<name>
+```
+
+一次可以列多个已确认同类型目标，但每个路径都必须显式写出。禁止：
+
+```bash
+git checkout <remote>/<branch> -- skills/
+```
+
+### 6B. 派生版：候选导出和定向合并
+
+派生版不直接 checkout。导出上游候选到临时目录：
+
+```bash
+CANDIDATE_DIR=$(mktemp -d "${TMPDIR:-/tmp}/skill-sync.XXXXXX")
+git archive <remote>/<branch> skills/<name> | tar -x -C "$CANDIDATE_DIR"
+diff -ruN "skills/<name>" "$CANDIDATE_DIR/skills/<name>" || true
+```
+
+根据本地基线、当前本地版和 upstream 候选做三方判断，只定向合并确认需要的文件或补丁。对 `skill-manager` 必须复验 DEC-020、DEC-034 对应的失败传播、registry 迁移、内容差异识别和回滚测试仍存在；不能用“随后再补”作为覆盖理由。
+
+### 7. 验证依赖、结构和实际行为
+
+先限定目标检查：
+
+```bash
+find skills/<name> -type l -print
+git diff --name-status -- skills/<name>
+git diff --cached --name-status -- skills/<name>
+python3 scripts/check_skills.py
+python3 scripts/check_links.py
+```
+
+- 新 Skill 出现符号链接时停止并调查其目标，不提交机器本地路径。
+- `license`、目录 `LICENSE.txt`、上游根许可证/NOTICE 和 `docs/SOURCE-INDEX.md` 必须相互一致。
+- 运行该 Skill 自带的测试、代表性脚本正常路径和错误路径；只有静态文件时说明无法验证的行为边界。
+
+最后运行项目门禁：
+
+```bash
+STRICT_LINKS=1 STRICT_SH_SYNTAX=1 STRICT_SKILL_YAML=1 bash scripts/check.sh
+```
+
+检查同步前后状态快照，允许变化仅限点名 Skill、明确附带的依赖文件和本次确实需要同步的项目文档。
+
+### 8. 失败回退
+
+不要在原路径上覆盖式回拷。先把失败候选移入同一备份根，再恢复：
+
+```bash
+mkdir -p "$BACKUP_ROOT/failed-current"
+mv "skills/<name>" "$BACKUP_ROOT/failed-current/<name>"
+cp -a "$BACKUP_ROOT/<name>" "skills/<name>"  # 本地原先存在时
+git restore --staged -- "skills/<name>"
+```
+
+新增 Skill 原先不存在时，只把失败候选移到 `failed-current/`，再执行 `git restore --staged -- "skills/<name>"` 清除新增的 index 记录。回退后重新运行目标状态检查和严格门禁。
+
+备份不自动删除；由维护者确认交付稳定后再决定是否清理。
+
+### 9. 文档和报告
+
+只同步事实变化影响的现有文档：
+
+- `docs/SOURCE-INDEX.md`：来源、baseline/upstream SHA、许可证、本地补丁与核对日期；
+- `CHANGELOG.md`：用户可见的新增或升级结果；
+- `docs/DECISIONS.md`：只有真的形成新的长期同步取舍时才记录；
+- `README.md`：仅新 Skill 进入公开资源导航时更新。
+
+报告必须包含：
+
+- 每个目标的新增/镜像/派生分类；
+- remote、branch、完整 upstream SHA；
+- 实际变更文件和保留的本地补丁；
+- 备份目录、manifest 和精确恢复方式；
+- 运行过的测试、命令输出摘要与 `NOT_VERIFIED`；
+- 任何意外副作用及处理结果。
+
+## 停止条件速查
+
+| 情况 | 处理 |
+|---|---|
+| remote URL 与用户指定不一致 | 停止，不改 remote |
+| push URL 不是 `DISABLED` | 停止，不 fetch/checkout |
+| 上游无 `SKILL.md` 或目标不存在 | 停止，报告重命名/删除可能性 |
+| 目标路径脏 | 停止，保留用户改动 |
+| 来源分类不清或发现本地独有补丁 | 按派生版处理 |
+| 目录外依赖未列入精确路径 | 停止，先补依赖清单 |
+| `skill-manager` 被要求整目录覆盖 | 拒绝，改走候选导出与定向合并 |
+| 严格检查或代表性行为失败 | 回退并保留失败候选 |

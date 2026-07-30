@@ -189,7 +189,16 @@ elif [[ "$SOURCE" =~ ^([^/]+)/([^/]+)(/(.+))?$ ]]; then
         OWNER="${BASH_REMATCH[1]}"
         REPO="${BASH_REMATCH[2]}"
         if [ -n "${BASH_REMATCH[4]}" ]; then
-            SUBPATH="${BASH_REMATCH[4]}"
+            # 简写格式是 owner/repo/branch/path/to/skill，branch 不能混入 subpath。
+            shorthand_tail="${BASH_REMATCH[4]}"
+            if [[ "$shorthand_tail" =~ ^([^/]+)/(.+)$ ]]; then
+                BRANCH="${BASH_REMATCH[1]}"
+                SUBPATH="${BASH_REMATCH[2]}"
+            else
+                # 兼容旧的 owner/repo/path 单段写法：视为 main 分支下的路径。
+                BRANCH="main"
+                SUBPATH="$shorthand_tail"
+            fi
             SOURCE_TYPE="github-subdir"
             CLONE_URL="https://github.com/$OWNER/$REPO"
         else
@@ -328,7 +337,7 @@ if [ "$SOURCE_TYPE" = "github-subdir" ] || [ "$SOURCE_TYPE" = "github" ]; then
         }
         git checkout "${BRANCH:-main}" -q
 
-        INSTALL_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "")
+        INSTALL_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "")
         INSTALL_BRANCH="${BRANCH:-main}"
 
         cd - > /dev/null
@@ -347,7 +356,7 @@ if [ "$SOURCE_TYPE" = "github-subdir" ] || [ "$SOURCE_TYPE" = "github" ]; then
             exit 1
         }
 
-        INSTALL_COMMIT=$(cd "$TEMP_CLONE_DIR/$GH_SKILL_NAME" && git rev-parse --short HEAD 2>/dev/null || echo "")
+        INSTALL_COMMIT=$(cd "$TEMP_CLONE_DIR/$GH_SKILL_NAME" && git rev-parse HEAD 2>/dev/null || echo "")
         INSTALL_BRANCH=$(cd "$TEMP_CLONE_DIR/$GH_SKILL_NAME" && git branch --show-current 2>/dev/null || echo "main")
 
         # 删除 .git 目录
@@ -578,7 +587,9 @@ for AGENT_DIR in "${ALL_AGENT_DIRS[@]}"; do
             if [ -f "$RECORD_SCRIPT" ]; then
                 local_args=()
                 if [ "$SOURCE_TYPE" = "github-subdir" ]; then
-                    local_args=(--remote-url "$CLONE_URL/tree/${INSTALL_BRANCH}/$SUBPATH" --remote-subpath "$SUBPATH")
+                    # remote_url 必须始终是可被 git clone/fetch 使用的仓库地址；
+                    # branch 与子目录分别保存在独立字段中。
+                    local_args=(--remote-url "$CLONE_URL" --remote-subpath "$SUBPATH")
                 else
                     local_args=(--remote-url "$CLONE_URL")
                 fi

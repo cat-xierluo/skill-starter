@@ -291,7 +291,7 @@ description: "A useful skill for various tasks."
 
 - 查看 [04-创建Skill/SKILL-DEV-GUIDE.md](../04-创建Skill/SKILL-DEV-GUIDE.md) 了解完整规范
 - 查看 [skills/skill-template/](../skills/skill-template/SKILL.md) 使用模板
-- 去 [ClawHub](https://clawhub.com) 看看更多真实 Skill
+- 去 [ClawHub](https://clawhub.ai) 看看更多真实 Skill
 
 ---
 

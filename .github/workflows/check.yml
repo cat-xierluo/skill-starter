@@ -1,10 +1,11 @@
 name: check
 
-# 合并前门禁：运行 scripts/check.sh（严格模式）
-# - 断链 / shell 语法错误 / Python 编译失败 / Skill frontmatter 缺失 任一失败即 CI 红
-# - 启用严格模式：STRICT_LINKS=1 + STRICT_SH_SYNTAX=1（当前仓库已全绿）
+# 统一 CI 状态检查：在 push / PR 上运行 scripts/check.sh（严格模式）
+# - 断链 / bash 语法 / ShellCheck error / Python 编译 / Skill frontmatter 任一失败即 CI 红
+# - 启用严格模式：链接 + shell + YAML（当前仓库已全绿）
+# - 是否强制管理员走 PR 由仓库分支保护决定，不由本工作流单独保证
 # 本地复跑：bash scripts/check.sh（默认非严格）；严格复跑对齐 CI：
-#   STRICT_LINKS=1 STRICT_SH_SYNTAX=1 bash scripts/check.sh
+#   STRICT_LINKS=1 STRICT_SH_SYNTAX=1 STRICT_SKILL_YAML=1 bash scripts/check.sh
 
 on:
   push:
@@ -26,12 +27,14 @@ jobs:
       - name: 配置 Python
         uses: actions/setup-python@v5
         with:
-          # check_links.py / check_skills.py 仅用标准库（os/re/sys）；
-          # PyYAML 可选，缺失时走内置 fallback。无需 pip install。
           python-version: '3.x'
+
+      - name: 安装检查依赖
+        run: python -m pip install --requirement requirements-check.txt
 
       - name: 运行自检（严格模式）
         env:
           STRICT_LINKS: '1'
           STRICT_SH_SYNTAX: '1'
+          STRICT_SKILL_YAML: '1'
         run: bash scripts/check.sh

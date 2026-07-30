@@ -23,6 +23,7 @@
 - `ROADMAP.md`
 - `CHANGELOG.md`
 
-## 仓库内参考
+## 延伸参考
 
-- [Skill 开发总指南](../../../04-创建Skill/SKILL-DEV-GUIDE.md)
+- [Skills.sh](https://skills.sh/)
+- [Agent Skills 规范](https://agentskills.io/)

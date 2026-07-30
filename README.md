@@ -7,7 +7,7 @@ Skill 开发启动模板仓库，面向 OpenClaw、Claude Code 和 Skills CLI �
 - 解释 Skill 的核心概念和基础工具链
 - 作为一个需求分流入口，先判断是否已有现成 Skill 可复用
 - 提供一个可直接复制的 `skill-template`
-- `skills/` 下提供多个真实在用的 Skill 可直接参考（`skill-template`、`skill-creator`、`git-batch-commit`、`skill-manager`）
+- `skills/` 下提供多个真实在用的 Skill 可直接参考（`skill-template`、`find-skills`、`skill-creator`、`git-batch-commit`、`skill-manager`）
 - 整理 Claude 官方 Skills / context / best practices / PDF 资料
 - 为本仓库自身提供可持续迭代的协作文档体系
 
@@ -26,21 +26,21 @@ Skill 开发启动模板仓库，面向 OpenClaw、Claude Code 和 Skills CLI �
 
 ## 与 legal-skills 的同步关系
 
-`skills/git-batch-commit/` 和 `skills/skill-manager/` 通过 `git fetch legal-skills main` + `git checkout legal-skills/main -- skills/<name>` 从 [legal-skills](https://github.com/cat-xierluo/legal-skills) 同步最新内容。其余 3 个来源不同:
+`skills/git-batch-commit/` 和 `skills/skill-manager/` 的上游均为 [legal-skills](https://github.com/cat-xierluo/legal-skills)，但同步策略不同：前者当前是无本地补丁的镜像，可按目录覆盖；后者已经是带回归测试的本地派生版，必须先比较再合并，不能直接覆盖。其余 3 个来源不同：
 
 - `skill-template/`:starter 仓库原创,不从 upstream 同步。
 - `skill-creator/`:来自 Anthropic 官方 [anthropics/skills](https://github.com/anthropics/skills) 仓库,本仓库收录内置,暂不从 upstream 自动同步。
 - `find-skills/`:来自第三方 [vercel-labs/skills](https://github.com/vercel-labs/skills) 仓库(即 Skills CLI / skills.sh 上游),本仓库收录内置,暂不从 upstream 自动同步。
 
 - legal-skills 作为只读 remote:`git remote add legal-skills https://github.com/cat-xierluo/legal-skills.git`
-- 同步命令:`git fetch legal-skills main && git checkout legal-skills/main -- skills/git-batch-commit skills/skill-manager`
-- 同步前可对比:`git diff skill-starter/main legal-skills/main -- skills/<name>`
+- `git-batch-commit` 同步命令：`git fetch legal-skills main && git checkout legal-skills/main -- skills/git-batch-commit`
+- `skill-manager` 同步前对比：`git fetch legal-skills main && git diff legal-skills/main -- skills/skill-manager`；保留 DEC-020、DEC-034 的本地补丁后再合并
 
 ## 学习入口
 
 本仓库有两种用法，按你的情况选：
 
-- **零基础顺序学习**：按 `docs/CONTENT-MATRIX.md` 的学习主线，从 `01-概念入门/` → `02-工具指南/` → `03-AI协作与上下文/` → `04-创建Skill/` 顺序读。每篇都有「前置知识」和「下一篇」，跟着走即可。
+- **零基础顺序学习**：按 `docs/CONTENT-MATRIX.md` 的学习主线，从 `01-概念入门/` → `02-工具指南/` → `03-AI协作与上下文/` → `04-创建Skill/` 顺序读。新增主线文章普遍提供「前置知识」和「下一篇」；较早文章仍在按写作规范复核。
 - **已有经验，按问题查阅**：看下方「资源导航」表格，直接跳到能回答你问题的文章。
 
 教程写作遵循 `docs/WRITING-GUIDE.md`（统一结构、贯穿示例项目 `todo.py`、跨平台标注）。
@@ -78,6 +78,7 @@ npx skills find react performance
 为了支持多个 Agent 在同一个项目里协作，本仓库还为以下 Agent 创建了相对符号链接：
 
 ```text
+.agents/skills      -> ../.claude/skills
 .codex/skills       -> ../.claude/skills
 .openclaw/skills    -> ../.claude/skills
 .workbuddy/skills   -> ../.claude/skills
@@ -101,16 +102,13 @@ cp -r skills/skill-template ../my-awesome-skill
 cd ../my-awesome-skill
 ```
 
-### 第三步：至少改这几类文件
+### 第三步：按 profile 改文件
 
 1. `SKILL.md`：填写 `name` 和 `description`
-2. `scripts/`：实现核心逻辑
-3. `references/`：补充按需加载的参考资料
-4. `.env.example`：环境变量模板
-5. `assets/config.yaml.example`：结构化配置模板
-6. `LICENSE.txt`：许可证文本
-7. `ROADMAP.md`、`TASKS.md`、`DECISIONS.md`
-8. `CHANGELOG.md`
+2. `LICENSE.txt`：确认许可证文本与 frontmatter 一致
+3. `ROADMAP.md`、`TASKS.md`、`DECISIONS.md`、`CHANGELOG.md`：留下可维护上下文
+4. 最小说明型可删除 `scripts/`、`assets/`、`.env.example` 和 `output/`
+5. 带脚本维护型再实现 `scripts/`，并让 `.env.example`、`assets/config.yaml.example` 中的字段都被真实读取
 
 ### 第四步：跑通一个最小流程
 
@@ -130,8 +128,12 @@ skill-starter/
 ├── CHANGELOG.md
 ├── AGENTS.md
 ├── CLAUDE.md
+├── LICENSE.txt
+├── requirements-check.txt
 ├── .claude/
 │   └── skills -> ../skills
+├── .agents/
+│   └── skills -> ../.claude/skills
 ├── .codex/
 │   └── skills -> ../.claude/skills
 ├── .openclaw/
@@ -140,8 +142,10 @@ skill-starter/
 │   └── skills -> ../.claude/skills
 ├── docs/
 │   ├── ARCHITECTURE.md
+│   ├── CONTENT-MATRIX.md
 │   ├── DECISIONS.md
 │   ├── ROADMAP.md
+│   ├── SOURCE-INDEX.md
 │   └── TASKS.md
 ├── 01-概念入门/
 ├── 02-工具指南/
@@ -152,9 +156,11 @@ skill-starter/
 │   ├── 01-需求分析.md
 │   ├── 02-搜索现成方案.md
 │   ├── 03-基于模板创建.md
-│   └── 04-调试与发布.md
+│   ├── 04-调试与发布.md
+│   └── 05-第三方-Skill-安全审查.md … 09-触发质量与eval.md
 ├── 05-参考资料/
-├── scripts/                # 仓库自检脚本（断链 + skill 完整性）
+├── scripts/                  # 统一检查入口与静态校验
+├── tests/                    # YAML、skill-manager、模板复制回归测试
 └── skills/
     ├── skill-template/        # starter 原创：Skill 仓库骨架模板
     ├── find-skills/           # 收录自 vercel-labs/skills：仓库内 Skill 检索
@@ -195,11 +201,12 @@ skill-starter/
 
 ## 当前成熟度与已知限制
 
-本仓库仍在早期迭代,尚未正式发布,以下几点请知悉:
+本仓库仍在早期迭代，尚未正式发布，以下几点请知悉：
 
-- 教程体系仍在完善,`02-工具指南/`、`03-AI协作与上下文/`、`04-创建Skill/` 的部分文章仍在补充,少数导航链接可能指向仍在撰写的目录。
-- `scripts/check.sh` 仅覆盖 Markdown 断链和 `SKILL.md` 必需字段的静态检查,**通过不代表 Skill 功能真实可用**,也不构成发布质量保证。
-- 模板和示例的端到端 Agent 验证流程、CI 门禁仍在建设中,当前以人工验收为主。
+- `01-概念入门/` 至 `04-创建Skill/` 的主线文章已经落盘，但较早文章的统一结构复核、命令复跑和零基础读者实操仍未完成。
+- `scripts/check.sh` 已覆盖脚本语法、自动化回归测试、Markdown 相对链接和 Skill frontmatter；CI 会安装 PyYAML 并按严格模式运行。**检查通过仍不代表真实 Agent 触发和真人学习体验已经验收。**
+- `skill-manager` 的安装/更新、YAML 严格校验和模板独立复制已有自动化测试；标准示例和四类真实 Agent 触发验证仍待建设。
+- main 已配置 required status check，但管理员仍可直接推送；当前门禁对管理员属于提交后检测，不应理解为所有改动都强制经过 PR。
 - `skills/` 下收录的第三方 Skill(`find-skills`、`skill-creator`)以“可直接参考/调用”的方式内置,不保证与上游实时一致;如需最新版本,请到对应上游仓库获取。
 - 整体处于“可用但仍在打磨”的阶段,欢迎使用和反馈,但暂不建议作为生产环境的强依赖。
 
@@ -215,7 +222,7 @@ skill-starter/
   | `skills/git-batch-commit` | [legal-skills](https://github.com/cat-xierluo/legal-skills) | MIT |
   | `skills/skill-manager` | [legal-skills](https://github.com/cat-xierluo/legal-skills) | MIT |
   | `skills/skill-creator` | [anthropics/skills](https://github.com/anthropics/skills) | Apache-2.0 |
-  | `skills/find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills) | 待确认（上游未提供 LICENSE） |
+  | `skills/find-skills` | [vercel-labs/skills](https://github.com/vercel-labs/skills) | MIT（目录已保留上游 LICENSE） |
 
   完整来源、同步 commit SHA、本地补丁见 `docs/SOURCE-INDEX.md`；方案讨论见 `docs/LICENSE-PLAN.md`。
 
@@ -229,7 +236,7 @@ skill-starter/
 - 中长期规划写入 `docs/ROADMAP.md`
 - 当前任务写入 `docs/TASKS.md`
 - 决策和工作日志写入 `docs/DECISIONS.md`
-- 提交前跑 `bash scripts/check.sh` 做断链与 skill 完整性自检
+- 提交前跑 `bash scripts/check.sh`；需与 CI 完全对齐时运行 `STRICT_LINKS=1 STRICT_SH_SYNTAX=1 STRICT_SKILL_YAML=1 bash scripts/check.sh`
 
 单个 Skill 内部则参考 `legal-skills` 的扁平做法：
 

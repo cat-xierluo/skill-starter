@@ -121,14 +121,15 @@
   - 文件大小与拆分建议
   - 真实 Skill 示例
 
-#### Building Skills for Claude Code: Automating your procedural knowledge
+#### Lessons from building Claude Code: How we use skills
 
-- **链接**：[claude.com/blog/building-skills-for-claude-code](https://claude.com/blog/building-skills-for-claude-code)
-- **发布日期**：2025-12-02
+- **链接**：[claude.com/blog/lessons-from-building-claude-code-how-we-use-skills](https://claude.com/blog/lessons-from-building-claude-code-how-we-use-skills)
+- **发布日期**：2026-06-03
+- **替代说明**：原 `building-skills-for-claude-code` 地址已于 2026-07-30 确认返回 404，改用当前官方的 Claude Code 团队实践文章。
 - **看点**：
-  - 为什么团队流程、schema、业务术语很适合打包成 Skill
-  - 如何把“组织里的隐性知识”变成 Claude Code 可用的显性流程
-  - 适合拿来理解团队内部 Skill 的价值
+  - Anthropic 内部数百个 Skill 的选题、结构和分发经验
+  - 团队如何管理 Skill marketplace、组合 Skill 并衡量使用情况
+  - 适合拿来理解团队内部 Skill 的维护与推广方式
 
 #### Skills explained: How Skills compares to prompts, Projects, MCP, and subagents
 

@@ -3,6 +3,36 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.27.0 - 2026-07-30
+
+### Fixed
+
+- `skill-manager` 更新命令现在会正确传播单项与批量失败，不再在 fetch、registry 或复制失败后报告成功。
+- GitHub 子目录安装改为分别记录可克隆仓库 URL、branch 与 subpath，修复 `owner/repo/branch/path` 简写把 branch 混入路径的问题，并兼容迁移旧 `/tree/...` / `/blob/...` registry。
+- 远程更新改为比较 commit 与目录内容，同版本内容变化也能识别；候选版本先暂存，切换失败自动恢复，旧版本保留为时间戳备份。
+- `check_skills.py` 不再用 fallback 掩盖 PyYAML 语法错误；严格模式缺少 PyYAML 时直接失败。
+- 修正 OpenClaw 官方仓库、Discord 与 ClawHub 入口；将已返回 404 的 Claude Code Skill 文章替换为当前官方团队实践文章。
+- 清理教程中已落盘文章仍被写成“暂未发布/后续篇章”的过期状态，补齐 AI 协作主线 09→10→11→12 以及创建 Skill 09 的可点击跨篇导航。
+
+### Added
+
+- 新增 `requirements-check.txt`，CI 固定安装 PyYAML 6.0.3 并启用严格 YAML 校验。
+- 全仓新增 21 个回归测试：14 个覆盖 skill-manager 的整仓与完整/简写子目录安装、旧 registry 迁移（含带 `/` 的分支名）、更新成功、失败传播、候选校验、复制中断与回滚保护，4 个覆盖 YAML 解析，3 个覆盖模板独立复制；测试已接入 `scripts/check.sh`。
+- 新增 `docs/plans/2026-07-30-P0-可靠性修复设计.md`，记录本轮实现边界、数据流和测试策略（DEC-034）。
+- `scripts/check_links.py --check-external` 由占位变为真实外链核验：支持并行请求、HEAD/轻量 GET 回退、有限重试、glob 允许清单及 URL/来源/原因报告；新增每周定时工作流和 6 个故障分级回归测试。
+- `/sync-upstream` 新增只读 remote、时间/SHA 备份、目录外依赖、镜像/派生版分流和失败回退协议；新增设计说明及 3 个临时 Git 仓库演练场景。
+
+### Changed
+
+- `skill-template` 采用单目录双 profile：最小说明型可删除脚本/配置，带脚本维护型真实读取环境变量和配置文件；移除未消费字段和仓库外层断链，新增独立 MIT `LICENSE.txt`。
+- 模板独立复制、维护型运行和最小 profile 现在由 3 个回归测试持续验证（DEC-035）；全仓回归测试总数增至 21 个。
+- 完成第三方来源锁定：分别记录 `find-skills`、`skill-creator` 的本地基线与最近核对的上游 HEAD，补齐 Vercel MIT 许可证并同步 Anthropic Apache-2.0 版权行（DEC-036）。
+- 收敛 README、ROADMAP、ARCHITECTURE、CONTENT-MATRIX、SOURCE-INDEX 与 TASKS：区分文章落盘、自动检查、真实 Agent 验证和真人验收，纠正外链占位与管理员可绕过门禁被提前写成完成的问题（DEC-037）。
+- 统一检查入口正式接入 ShellCheck error 级规则；严格模式要求 ShellCheck 可用，style/warning 级上游历史项暂不阻断。
+- 按 AGENTS v4.0 的文档职责重构任务体系：`TASKS.md` 从 229 行历史流水收敛为 11 张唯一当前任务卡；完成史改由 CHANGELOG/DECISIONS 承载，ROADMAP 改用结果型退出条件并保留长期候选方向。
+- 外链联网检查保持为独立定时任务，不进入普通 push / PR 与本地 `scripts/check.sh`；确定性 4xx 阻断，访问受限和持续网络异常完整报告但不制造假断链（DEC-038）。
+- 上游同步不再把所有同名 Skill 当成可覆盖镜像：无本地补丁镜像可精确 checkout，派生版只导出候选并定向合并；`skill-manager` 明确禁止整目录覆盖（DEC-039）。
+
 ## 0.26.0 - 2026-07-29
 
 ### Changed

@@ -1,6 +1,8 @@
 # 项目架构
 
-> Last updated: 2026-07-27
+> Last updated: 2026-07-30
+>
+> 当前缺陷与验收状态以 [TASKS.md](./TASKS.md) 为准；本文只描述稳定的结构与职责边界。
 
 ## 定位
 
@@ -28,8 +30,11 @@
 负责把规范变成可复制资产。
 
 - `.claude/skills -> ../skills`：Claude Code 实际读取的 project-local Skill 入口
-- `skills/skill-template/`：标准起点模板
+- `.agents/skills`、`.codex/skills`、`.openclaw/skills`、`.workbuddy/skills`：复用同一来源的其他 Agent 入口
+- `skills/skill-template/`：支持最小说明型与带脚本维护型两种 profile 的标准起点模板
 - `skills/find-skills/`：搜索外部 Skill 的引导文档
+- `skills/git-batch-commit/`、`skills/skill-manager/`：来自 legal-skills 的实际维护工具，其中 skill-manager 是带本地补丁的派生版
+- `skills/skill-creator/`：收录自 Anthropic 的 Skill 创建与 eval 工作流
 
 ### 3. 仓库治理层
 
@@ -39,6 +44,21 @@
 - `docs/ROADMAP.md`：阶段目标和路线图
 - `docs/TASKS.md`：当前任务状态
 - `docs/DECISIONS.md`：决策与工作日志
+- `docs/CONTENT-MATRIX.md`：文章编号与发布状态
+- `docs/SOURCE-INDEX.md`：内置 Skill 的来源、版本和许可证事实
+- `.claude/commands/sync-upstream.md`：按新增、镜像和派生版三类处理上游同步，固定只读 remote、时间/SHA 备份、依赖核对和失败回退协议
+
+### 4. 质量验证层
+
+负责阻止断链、非法 frontmatter 和更新器假成功进入主线。
+
+- `scripts/check.sh`：本地与 CI 共用的统一入口
+- `scripts/check_links.py`：默认离线检查 Markdown 相对链接、锚点和引用式链接；显式 `--check-external` 时并行核验外链，支持重试、允许清单和来源定位
+- `scripts/external_links_allowlist.txt`：记录已由官方入口交叉确认、但不适合自动请求判断的外链 glob
+- `scripts/check_skills.py`：严格 YAML 与 Skill 结构检查
+- `tests/`：skill-manager、YAML 解析、模板独立复制、外链故障分级和上游同步 Git 协议回归测试
+- `.github/workflows/check.yml`：安装固定检查依赖并运行严格模式
+- `.github/workflows/check-external-links.yml`：每周或手动运行外链核验，与普通 push / PR 门禁解耦
 
 ## 设计原则
 
@@ -56,10 +76,10 @@ Git / GitHub / commit 属于基础工具；Vibe Coding、`AGENTS.md`、`CLAUDE.m
 
 ### 协作文档默认存在
 
-复杂 Skill 或长期维护的 Skill，默认应该带上 `docs/` 和 `CHANGELOG.md`，这样未来的人类或 Agent 才能接上上下文。
+复杂 Skill 或长期维护的 Skill，默认应该带上 `ROADMAP.md`、`TASKS.md`、`DECISIONS.md` 和 `CHANGELOG.md`；是否再使用 `docs/` 子目录由具体项目规模决定。重要上下文不能只留在聊天里。
 
 ## 后续演进方向
 
-- 增加自动化校验脚本，检查断链、目录结构和模板完整性
-- 增加更多不同类型的示例 Skill
-- 增加与 Skills CLI、Claude Code、OpenClaw 的实测安装说明
+- 建立一个 starter 原创、可端到端运行的标准示例 Skill
+- 增加真实 Agent 的正例、负例、执行和错误输入验证
+- 复核较早教程结构并完成零基础读者实操验收
