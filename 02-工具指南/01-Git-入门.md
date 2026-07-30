@@ -8,6 +8,22 @@
 
 > Git 是记录文件变化历史的工具。
 
+## 本篇目标
+
+读完这篇，你能：
+
+- 在自己电脑上装好 Git，并完成一次「姓名 + 邮箱」的基础配置
+- 说清 Git 的 3 个核心区域（工作区 / 暂存区 / 仓库历史）各自装什么
+- 用 `git status → git add → git commit → git log` 走完一次完整提交
+- 在分支上改东西再合并回 `main`，并手动解决一次简单的合并冲突
+- 在 `restore / revert / reset` 之间选对「往回退」的安全命令
+
+## 前置知识
+
+会用终端敲命令（`mkdir`、`cd`、`echo`、`ls` 这几个）。还没摸过命令行的话，照抄示例也能跑，但建议先看 [终端与命令行入门](./06-终端与命令行入门.md)，至少知道「在哪个文件夹里敲」这件事。
+
+本篇示例统一用贯穿小项目 `todo.py`（本地命令行待办脚本，存 `todos.json`，有 `add/list/done` 三个命令）当练习素材，命令示例会标注 macOS / Windows / Linux 的差异。
+
 ## 什么时候你会需要 Git
 
 - 想保存每次改动
@@ -60,15 +76,15 @@ git config --global --list
 
 这是新手最应该先理解的东西。
 
-### 1. 工作区
+### 工作区
 
 你正在编辑文件的地方。
 
-### 2. 暂存区
+### 暂存区
 
 你准备提交的改动会先进入这里。
 
-### 3. 仓库历史
+### 仓库历史
 
 真正提交成功后，改动会进入 Git 历史。
 
@@ -88,14 +104,16 @@ git push
 
 ## 你第一次可以完整跑一遍的例子
 
-### 1. 创建测试目录
+下面用贯穿小项目 `todo.py`（待办脚本，存 `todos.json`）当素材，第一次跑只需建一个仓库、放一个文件、提交一次。一共 7 步。
+
+### 第一步：创建测试目录
 
 ```bash
 mkdir git-demo
 cd git-demo
 ```
 
-### 2. 初始化 Git 仓库
+### 第二步：初始化 Git 仓库
 
 ```bash
 git init
@@ -103,13 +121,15 @@ git init
 
 这会在当前目录生成 `.git/`，表示 Git 开始管理这个文件夹。
 
-### 3. 创建一个文件
+### 第三步：创建一个文件
+
+先用一个简单的 `README.md` 代替 `todo.py`（脚本本身后面再写），把仓库跑起来：
 
 ```bash
 echo "# Git Demo" > README.md
 ```
 
-### 4. 查看状态
+### 第四步：查看状态
 
 ```bash
 git status
@@ -117,19 +137,19 @@ git status
 
 你会看到 `README.md` 还没有被提交。
 
-### 5. 暂存文件
+### 第五步：暂存文件
 
 ```bash
 git add README.md
 ```
 
-### 6. 提交
+### 第六步：提交
 
 ```bash
 git commit -m "feat: 初始化 Git Demo"
 ```
 
-### 7. 查看历史
+### 第七步：查看历史
 
 ```bash
 git log --oneline
@@ -273,7 +293,7 @@ git rev-parse --short HEAD
 
 前面讲了「分支是什么」的概念，这一节把它跑起来。继续用 `git-demo` 那个项目，先准备一个能合并的场景。
 
-### 1. 开一条分支改东西
+### 第一步：开一条分支改东西
 
 ```bash
 git switch -c feature/add-todo
@@ -282,7 +302,7 @@ git add README.md
 git commit -m "feat: 加一条待办"
 ```
 
-### 2. 切回主分支再合并
+### 第二步：切回主分支再合并
 
 ```bash
 git switch main
@@ -504,7 +524,7 @@ git push --force-with-lease       # 只在远程没人动过时才强制推送�
 
 ## 常见错误
 
-### 1. `fatal: not a git repository`
+### 不在 Git 仓库目录里：`fatal: not a git repository`
 
 原因：你不在 Git 仓库目录里。
 
@@ -517,7 +537,7 @@ ls -la
 
 确认当前目录是否有 `.git/`。
 
-### 2. `nothing to commit`
+### 提交时显示 `nothing to commit`
 
 原因：
 
@@ -530,18 +550,18 @@ ls -la
 git status
 ```
 
-### 3. 提交作者信息不对
+### 提交作者信息不对
 
-重新设置：
+`git config` 设的姓名 / 邮箱会写进每条提交记录，错了要重新设置：
 
 ```bash
 git config --global user.name "你的名字"
 git config --global user.email "your.email@example.com"
 ```
 
-### 4. 把不该提交的文件加进去了
+### 把不该提交的文件加进去了
 
-先补 `.gitignore`，再处理跟踪状态。
+先把该忽略的写进 `.gitignore`，再处理已经被 Git 跟踪的文件状态。
 
 ## 新手推荐实践
 
@@ -551,15 +571,25 @@ git config --global user.email "your.email@example.com"
 4. 别直接在 `main` 上乱改
 5. 配合 GitHub 使用时，优先走分支 + PR
 
-## 下一步看什么
+## 自测题
 
-读完这篇，建议接着看：
+照着做一遍，能答上来就算过关。素材继续用 `todo.py`（没写脚本也没关系，先用一个 `todos.json` 文件代替）。
 
-- [GitHub 入门](./02-GitHub-入门.md)
-- [SSH 配置](./03-SSH-配置.md)
-- [提交到 GitHub 与 Commit 规范](./04-提交到-GitHub-与-Commit-规范.md)
-- [GitHub PR 与 Code Review](./05-GitHub-PR-与-Code-Review.md)
-- 命令行还生疏的话，先看 [终端与命令行入门](./06-终端与命令行入门.md)
+1. **跑通一次提交**：新建 `todo-demo` 目录，`git init` 后放进一个 `todos.json`（内容随意），用 `git status → git add → git commit` 提交一次，再用 `git log --oneline` 看到这条提交。
+2. **看懂三个区域**：改一下 `todos.json` 但先不 `add`。此时分别执行 `git status`、`git diff`、`git diff --staged`，说出三者各自看的是哪个区域（工作区 / 暂存区 / 仓库历史）。
+3. **走一次分支 + 合并**：开一条分支 `feature/add-done-cmd`，在 `todos.json` 里加一行内容并提交；切回 `main`，把它 `git merge` 进来。用 `git log --oneline --graph` 看历史长什么样。
+4. **故意制造一次冲突并解决**：在 `main` 和分支上改 `todos.json` 的同一行，合并时触发 `CONFLICT`；手动删掉三组冲突标记，`git add` 后完成合并。
+5. **练一次安全回退**：提交一条「误操作」的 commit（还没 push），分别用 `git reset --soft HEAD~1` 和 `git reset --mixed HEAD~1` 各试一次，用 `git status` 说出两种模式下改动分别落在哪个区域。
+
+> 验收：第 1、3 题完成后 `git log` 能看到对应提交；第 4 题最终文件里没有任何 `<<<<<<<` 标记、`git status` 显示 clean。
+
+## 下一篇
+
+Git 在本地跑通后，自然的一步是把项目放到 GitHub 上——既当备份，也打开协作入口。
+
+继续看 [GitHub 入门](./02-GitHub-入门.md)，它会带你从「只有账号」走到「创建仓库、连接本地、推送代码」。
+
+> 连 GitHub 需要先配认证。日常长期开发推荐 SSH，那条线放在 [SSH 配置](./03-SSH-配置.md)，看完 GitHub 入门再补；其它工具篇随时可从 [README](../README.md) 回查。
 
 ## 一句话总结
 

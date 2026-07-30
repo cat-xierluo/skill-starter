@@ -6,6 +6,22 @@
 
 **让你从“只有账号”走到“能创建仓库、连接本地、提交代码”。**
 
+## 本篇目标
+
+读完这篇，你能：
+
+- 注册 GitHub 账号并完成邮箱验证、基础资料设置
+- 在 GitHub 上创建一个仓库，并用 SSH 或 HTTPS + Token 把它和本地连起来
+- 说清 fine-grained personal access token（细粒度个人访问令牌）比 classic token 好在哪、什么场景该用哪种
+- 把本地改动 `push` 到 GitHub，并看懂 Code / Issues / Pull requests / Settings 四个核心页面
+- 用 Issue 跟踪任务，用 `Closes #编号` 让 commit 合并后自动关 Issue
+
+## 前置知识
+
+先看 [Git 入门](./01-Git-入门.md)：本篇会用到的 `git init`、`git add`、`git commit`、`git push`、`git remote` 都在那篇讲过，这里默认你已经能在本地完成一次提交。
+
+命令行示例标注了平台差异（macOS / Windows Git Bash / Linux）；其中连接 GitHub 需要认证，本篇会分别讲 SSH 和 HTTPS + Token 两条路，SSH 的详细配置在 [SSH 配置](./03-SSH-配置.md)。
+
 ## 第一步：注册并完成基础设置
 
 1. 打开 [GitHub](https://github.com)
@@ -263,6 +279,17 @@ git push -u origin main
 3. 不要把 Token 提交进仓库
 4. 不要直接在主分支乱改
 5. 每次 push 前先看 `git status`
+
+## 自测题
+
+用贯穿小项目 `todo.py`（待办脚本，存 `todos.json`，`add/list/done` 三命令）当素材。仓库可以先建成 `Private`，避免练习内容外泄。
+
+1. **建仓 + 连本地**：在 GitHub 建一个 `todo-demo` 仓库；本地新建目录、`git init`、放一个 `todo.py`（暂时 `print("todo")` 也行），用 SSH（或 HTTPS + Token）把 `remote` 连好，`git push -u origin main` 成功，GitHub 页面能看到文件。
+2. **配好认证**：在本地 `git remote -v` 看清走的是 SSH 还是 HTTPS；若走 HTTPS，建一个 fine-grained PAT（只给 `todo-demo` 这一个仓库的 `Contents` 读写权限），用它完成一次 `push`。
+3. **开 Issue 并关联 commit**：用 `gh issue create` 开一个 Issue，标题「list 命令在空列表时报错」；本地建分支改一行 `todo.py`，commit message 里写 `Closes #<编号>`，push 后记下编号，等合并到 `main` 时验证它被自动关闭（本篇还讲不到 PR 合并，做到「commit 带上 Closes」即可，合并留给下一篇）。
+4. **分清四个页面**：在仓库页依次打开 Code / Issues / Pull requests / Settings，各说一句话它们管什么；找到 `Settings` → `Developer settings` → `Personal access tokens` → `Fine-grained tokens` 的路径。
+
+> 验收：第 1 题 GitHub 页面出现 `todo.py`；第 2 题能说出自己用的是哪种认证、PAT 限定了哪些仓库；第 3 题 `git log` 里能看到带 `Closes #<编号>` 的那条 commit。
 
 ## Issue：跟踪要做的事
 
@@ -543,6 +570,14 @@ gh pr merge 12 --squash --delete-branch
 
 - GitHub 官方认证说明：[About authentication to GitHub](https://docs.github.com/authentication/keeping-your-account-and-data-secure/about-authentication-to-github)
 - GitHub 官方 Token 说明：[Managing your personal access tokens](https://docs.github.com/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+
+## 下一篇
+
+仓库连上、能 push 之后，下一步是把「提交」这件事做规范——每次 `git commit` 写什么、一次提交放多少东西、push 之后去 GitHub 检查什么。
+
+继续看 [提交到 GitHub 与 Commit 规范](./04-提交到-GitHub-与-Commit-规范.md)，它会给你一套照着用就够的 commit message 写法。
+
+> 想直接进协作流程（PR、Code Review、合并策略）的，可以跳到 [GitHub PR 与 Code Review](./05-GitHub-PR-与-Code-Review.md)；认证那块若打算长期用 SSH，先补 [SSH 配置](./03-SSH-配置.md)。其它工具篇随时可从 [README](../README.md) 回查。
 
 ## 一句话总结
 

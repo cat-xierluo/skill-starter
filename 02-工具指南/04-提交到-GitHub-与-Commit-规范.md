@@ -4,6 +4,20 @@
 
 **你已经会改文件了，接下来怎样把改动规范地提交、推送到 GitHub。**
 
+## 本篇目标
+
+读完这篇，你能：
+
+- 背出最小提交闭环：`git status → git diff → git add → git diff --staged → git commit → git push`
+- 用 `type: 一句话说明` 格式写 commit message，并说清 `feat/fix/docs/refactor/chore/test` 各自用在什么时候
+- 判断一条 commit message 算「差」还是「够用」，并能改写一条差的
+- 落实「一次提交只做一件主要事情」，把混合改动拆成多个聚焦的提交
+- push 之后回到 GitHub 页面确认分支和文件都对
+
+## 前置知识
+
+先看 [Git 入门](./01-Git-入门.md) 和 [GitHub 入门](./02-GitHub-入门.md)：本篇默认你已经能在本地 `git init`、`git add`、`git commit`，并且已经把本地仓库和 GitHub 用 SSH 或 HTTPS + Token 连好（认证部分见 [SSH 配置](./03-SSH-配置.md)）。示例继续用贯穿小项目 `todo.py`（存 `todos.json`，`add/list/done` 三命令）当提交素材。
+
 ---
 
 ## 1. 先记住最小闭环
@@ -238,23 +252,23 @@ git push -u origin feature/add-context-guide
 
 ## 10. 新手最容易犯的错误
 
-### 错误 1：不看 diff 就提交
+### 不看 diff 就提交
 
 结果常常是把 `.env`、临时文件、无关格式化一起交上去。
 
-### 错误 2：一口气 `git add .`
+### 一口气 `git add .`
 
 不是永远不能用，但新手更稳妥的做法是先指定文件。
 
-### 错误 3：commit message 太随便
+### commit message 太随便
 
 短期看省事，长期看非常难维护。
 
-### 错误 4：直接在 `main` 上乱改
+### 直接在 `main` 上乱改
 
 尤其是多人协作时，很容易把主分支搞乱。
 
-### 错误 5：push 之后不检查
+### push 之后不检查
 
 本地成功不等于 GitHub 页面上就是你想要的结果。
 
@@ -270,12 +284,26 @@ git push -u origin feature/add-context-guide
 
 ---
 
-## 12. 建议继续读
+## 12. 自测题
 
-- [Git 入门](./01-Git-入门.md)
-- [GitHub 入门](./02-GitHub-入门.md)
-- [SSH 配置](./03-SSH-配置.md)
-- [上下文工程入门](../03-AI协作与上下文/03-上下文工程入门.md)
+用 `todo.py`（待办脚本，存 `todos.json`，`add/list/done` 三命令）当素材，照着做完算过关。
+
+1. **跑通最小闭环**：给 `todo.py` 的 `list` 加一个 `--pending` 选项，按 `git status → git diff → git add → git diff --staged → git commit → git push` 走一遍，每个命令都说一句看到了什么。
+2. **写规范的 commit message**：把第 1 题的改动写成 `feat: list 支持 --pending 只看待办项`；再故意写一条差的（如 `update`），说出它差在哪、review 时会怎么问你。
+3. **拆成多个聚焦提交**：假设你同时改了 `todo.py`（新功能）和 `README.md`（说明），把这两类改动分两次提交——一次 `feat`、一次 `docs`，而不是混在一个 commit 里。
+4. **push 后回 GitHub 确认**：推送后打开 GitHub 页面，核对分支名、文件、commit message 都对；再点开 commit 看 diff，确认没有夹带无关文件。
+
+> 验收：第 2 题能说清 `type` 选型和「差」的标准；第 3 题两条 commit 各自只动一类文件；第 4 题在 GitHub commit 页看不到多余文件。
+
+---
+
+## 下一篇
+
+会规范提交之后，下一步是把一组提交打包成一个「有上下文的合并请求」——这就是 Pull Request。
+
+继续看 [GitHub PR 与 Code Review](./05-GitHub-PR-与-Code-Review.md)：它会讲清怎么开 PR、怎么写别人看得懂的 PR 描述、怎么做 Code Review、怎么选合并策略。
+
+> Git / GitHub / SSH 这几篇还没看的话，从 [Git 入门](./01-Git-入门.md) 起补；其它工具篇随时可从 [README](../README.md) 回查。
 
 ---
 
