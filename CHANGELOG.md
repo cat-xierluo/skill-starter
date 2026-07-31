@@ -3,6 +3,26 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.29.0 - 2026-07-30
+
+### Added
+
+- **新增 starter 原创端到端标准示例 Skill `skills/todo/`**（T-007，DEC-041）：把 `04-创建Skill/07-带脚本-Skill.md` 教程里散落的 `todo.py` 片段落盘成完整可运行的带脚本型 Skill。这是仓库首个原创的、从触发/契约/脚本/错误路径/测试到维护文档都完整的标准示例。
+  - `scripts/todo.py`：add/list/done 三命令，纯标准库；成功结果走 stdout（JSON）、错误走 stderr、退出码诚实（0 成功 / 1 找不到 id / 2 用法错误）。
+  - 采用 skill-template 双 profile 的「带脚本维护型最简变体」：无配置无依赖，故不含 `.env.example`、`config.yaml.example`、`requirements.txt`，只保留 `assets/todos.example.json`。
+  - 协作文档四件套（CHANGELOG/ROADMAP/TASKS/DECISIONS）+ LICENSE.txt（MIT）+ references/README 初始化。
+- **新增 `tests/test_skill_todo.py`（10 个测试）**：复用 test_skill_template 的 git-tracked 复制法 + 临时目录隔离。覆盖正常路径（add 输出合法 JSON、list 显示条目）、4 类错误路径（done 99 退出码 1、空文本/无参数/未知命令退出码 2）、守恒性（done 后 todos.json 该条 done 真变 true，防 11 篇讲的假绿 bug）、干净隔离（运行后源目录不出现 todos.json）、必需文件齐全。全仓回归测试总数 30 → 40。
+
+### Changed
+
+- `04-创建Skill/07-带脚本-Skill.md`：脚本片段 DB 路径从 `Path(__file__).parent.parent / "todos.json"`（Skill 根目录）改为 `Path.cwd() / "todos.json"`（运行目录），便于在临时目录隔离测试、不污染 Skill 源目录；补注完整可运行版见 `skills/todo/`、回归测试见 `tests/test_skill_todo.py`。
+- `docs/SOURCE-INDEX.md`：总表新增 `skills/todo` 行（starter 原创、本地基线 0.1.0、MIT），并补对应详情小节。
+
+### Notes
+
+- 验证：`STRICT_LINKS=1 STRICT_SH_SYNTAX=1 bash scripts/check.sh` 全绿（40 测试 + 严格链接 + 6 个 Skill 完整性 + ShellCheck error + PyYAML 严格解析）。CI 严格门禁拦下 references/README 一处相对链接层级错误（`../../` 应为 `../../../`），已修复。
+- T-007 标记完成（决策见 DEC-041）。T-009（逐步实验）因 T-007 交付解除阻塞转为就绪；T-008（真实 Agent 验证）仍阻塞于「可隔离 Agent 环境」。
+
 ## 0.28.0 - 2026-07-30
 
 ### Changed

@@ -83,7 +83,7 @@ import json
 import sys
 from pathlib import Path
 
-DB = Path(__file__).parent.parent / "todos.json"  # 写到 Skill 根目录（不是 scripts/）；并把 todos.json 加进 .gitignore
+DB = Path.cwd() / "todos.json"  # 写到运行目录（cwd），便于在任意目录运行、在临时目录隔离测试，不污染 Skill 源目录
 
 
 def load():
@@ -172,7 +172,9 @@ todo/
 └── .env.example
 ```
 
-`assets/todos.example.json` 放一份示例数据形态（空数组 `[ ]` 或一两条示例待办），给读者参考数据长什么样。真正的 `todos.json` 由脚本运行时生成，**不进仓库**——模板 `.gitignore` 默认没有它，需自己加一行 `todos.json`。
+`assets/todos.example.json` 放一份示例数据形态（空数组 `[ ]` 或一两条示例待办），给读者参考数据长什么样。真正的 `todos.json` 由脚本运行时生成、写到运行目录（cwd），**不进仓库**——模板 `.gitignore` 默认没有它，需自己加一行 `todos.json`。
+
+> 本篇的 `todo.py` 已落盘成完整可运行的 `skills/todo/`，是本仓库的端到端标准示例（对应 `docs/TASKS.md` 的 T-007）；那里的回归测试 `tests/test_skill_todo.py` 把上面四条验证固化成了自动检查。
 
 ### 第 2 步：写 frontmatter
 

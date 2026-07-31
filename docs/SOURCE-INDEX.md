@@ -11,6 +11,7 @@
 | 目录名 | 来源类型 | 上游 URL | 同步 commit SHA / tag | 许可证 | 本地补丁 | 最近核对 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `skills/skill-template` | starter 原创 | —（本仓库原创） | 本地模板 0.2.0 | MIT（frontmatter + 目录 `LICENSE.txt`） | —（原创） | 2026-07-30 |
+| `skills/todo` | starter 原创 | —（本仓库原创） | 本地基线 0.1.0 | MIT（frontmatter + 目录 `LICENSE.txt`） | —（原创） | 2026-07-30 |
 | `skills/find-skills` | 第三方收录 | https://github.com/vercel-labs/skills （`skills/find-skills/SKILL.md`） | 本地基线 `66a7b901`；上游最近核对 `7cb7db64` | MIT（同步上游根 LICENSE 到目录） | 基线内容无本地补丁；落后于上游 `773fb2c7` 的教程更新 | 2026-07-30 |
 | `skills/git-batch-commit` | legal-skills 同步 | https://github.com/cat-xierluo/legal-skills | `efde445`（版本 1.4.1） | MIT（frontmatter；上游仓库根 LICENSE） | 无；当前内容与 `legal-skills/main` 一致 | 2026-07-30 |
 | `skills/skill-creator` | 第三方收录 | https://github.com/anthropics/skills （`skills/skill-creator/`） | 本地基线 `3d595115`；上游最近核对 `b29e7cf6` | Apache-2.0（目录 `LICENSE.txt`，版权行同步自 `b9e19e6f`） | 基线代码无本地补丁；上游存在后续功能更新 | 2026-07-30 |
@@ -26,6 +27,15 @@
 - **许可证现状**：MIT。`SKILL.md` frontmatter 与目录 `LICENSE.txt` 已一致；复制到独立目录后仍携带完整授权文本（DEC-035）。
 - **本地补丁**：不适用（原创）。
 - **风险与待办**：模板许可证问题已关闭。复制者如果改用其他许可证，必须同时替换 `LICENSE.txt` 与 frontmatter `license`。
+
+### `skills/todo`
+
+- **来源类型**：starter 原创（本仓库维护的端到端标准示例 Skill）。
+- **上游**：无。本目录是仓库原创内容，定位为 T-007 端到端标准示例——把教程 `04-创建Skill/07-带脚本-Skill.md` 里散落的 `todo.py` 片段落盘成完整可运行的带脚本型 Skill。
+- **目录内容**：`SKILL.md`、`LICENSE.txt`、`CHANGELOG.md`、`DECISIONS.md`、`ROADMAP.md`、`TASKS.md`、`.gitignore`、`assets/todos.example.json`、`references/README.md`、`scripts/todo.py`。采用 skill-template 双 profile 中的「带脚本维护型最简变体」：无配置需求，故不含 `.env.example`、`config.yaml.example`、`requirements.txt`。
+- **许可证现状**：MIT。`SKILL.md` frontmatter 与目录 `LICENSE.txt` 一致。
+- **本地补丁**：不适用（原创）。
+- **数据位置**：`todos.json` 写到运行目录（cwd），不进仓库（`.gitignore` 已忽略），便于在临时目录隔离测试。回归测试 `tests/test_skill_todo.py` 覆盖正常路径、4 类错误路径、守恒性（防假绿）和干净隔离。
 
 ### `skills/find-skills`
 
