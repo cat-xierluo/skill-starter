@@ -150,6 +150,16 @@ class SkillTodoCopyTests(unittest.TestCase):
         ):
             self.assertTrue((self.copy / required).is_file(), required)
 
+    def test_gitignore_covers_runtime_artifacts(self):
+        """T-006 实走发现的缺陷回归防护：.gitignore 必须覆盖 todos.json 和 __pycache__。
+
+        todo Skill 复制到独立仓库后，根 .gitignore 不会跟着走，所以 todo 自己的
+        .gitignore 必须自包含地忽略运行时产物，否则 git add . 会把数据和 .pyc 提交进仓。
+        """
+        gitignore = (self.copy / ".gitignore").read_text(encoding="utf-8")
+        self.assertIn("todos.json", gitignore)
+        self.assertIn("__pycache__", gitignore)
+
 
 if __name__ == "__main__":
     unittest.main()

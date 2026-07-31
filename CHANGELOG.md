@@ -3,6 +3,22 @@
 本文件记录本仓库对外可见的变更。
 即使当前还没有正式对外发布，也按内部迭代版本记录，例如 `0.1.0`、`0.2.0`，而不是只维护一个 `Unreleased` 段落。
 
+## 0.31.0 - 2026-07-31
+
+### Fixed
+
+- **T-006 实走发现并修复 `skills/todo/.gitignore` 缺陷**：原 `.gitignore` 只忽略 `todos.json`，漏了 `__pycache__/` 和 `*.py[cod]`。读者跑完脚本后 `git add .` 会把 `.pyc` 缓存提交进仓库。补上忽略规则，并新增回归测试 `test_gitignore_covers_runtime_artifacts` 防止缺陷回归（DEC-043）。
+
+### Changed
+
+- **T-006 对 `10-从复制到发布-逐步实验` 做人工实走验证**：在干净临时目录按教程逐步执行，确认运行/测试/版本/发布/回滚全链可复跑——`done 99` 退出码诚实（0→1 假绿→回滚恢复）、`git tag` / `git switch --detach v0.1.0` / `git revert` 三种回滚方式均验证生效。第 2 步 `.gitignore` 内容和常见错误措辞同步更新（含 `__pycache__/`）。
+- `docs/TASKS.md` 的 T-006 标记为「部分完成」，记录验证责任分类（已自动验证 / 需 Agent 环境 / 需真人 / 需跨平台）。
+
+### Notes
+
+- 验证：`STRICT_LINKS=1 STRICT_SH_SYNTAX=1 bash scripts/check.sh` 全绿（41 测试，含新增 `test_gitignore_covers_runtime_artifacts`）。
+- T-006 核心缺口（todo.py 全链 + 10-逐步实验命令链可复跑）已闭环。剩余项明确为「需 Agent 环境/真人/跨平台」，AI 无法独立收口（DEC-043）。
+
 ## 0.30.0 - 2026-07-30
 
 ### Added
